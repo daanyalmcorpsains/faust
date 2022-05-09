@@ -887,7 +887,7 @@ class AIOKafkaConsumerThread(BrokerCredentialsMixin,ConsumerThread ):
         return self._partitioner(key, all_partitions, available)
 
 
-class Producer(base.Producer):
+class Producer(BrokerCredentialsMixin,base.Producer):
     """Kafka producer using :pypi:`aiokafka`."""
 
     logger = logger
@@ -923,8 +923,7 @@ class Producer(base.Producer):
         }
 
     def _settings_auth(self) -> Mapping[str, Any]:
-        return credentials_to_aiokafka_auth(
-            self.credentials, self.ssl_context)
+        return self.get_auth_credentials(client='aiokafka')
 
     async def begin_transaction(self, transactional_id: str) -> None:
         """Begin transaction by id."""
@@ -1020,14 +1019,14 @@ class Producer(base.Producer):
 
     async def on_start(self) -> None:
         """Call when producer starts."""
-        await super().on_start()
+        await super(BrokerCredentialsMixin,self).on_start()
         producer = self._producer = self._new_producer()
         self.beacon.add(producer)
         await producer.start()
 
     async def on_stop(self) -> None:
         """Call when producer stops."""
-        await super().on_stop()
+        await super(BrokerCredentialsMixin,self).on_stop()
         cast(Transport, self.transport)._topic_waiters.clear()
         producer, self._producer = self._producer, None
         if producer is not None:
@@ -1259,41 +1258,3 @@ class Transport(base.Transport):
         else:
             owner.log.info('Topic %r created.', topic)
             return
-
-
-def credentials_to_aiokafka_auth(credentials: CredentialsT = None,
-                                 ssl_context: Any = None) -> Mapping:
-    if credentials is not None:
-        if isinstance(credentials, SSLCredentials):
-            return {
-                'security_protocol': credentials.protocol.value,
-                'ssl_context': credentials.context,
-            }
-        elif isinstance(credentials, SASLCredentials):
-            return {
-                'security_protocol': credentials.protocol.value,
-                'sasl_mechanism': credentials.mechanism.value,
-                'sasl_plain_username': credentials.username,
-                'sasl_plain_password': credentials.password,
-                'ssl_context': credentials.ssl_context,
-            }
-        elif isinstance(credentials, GSSAPICredentials):
-            return {
-                'security_protocol': credentials.protocol.value,
-                'sasl_mechanism': credentials.mechanism.value,
-                'sasl_kerberos_service_name':
-                    credentials.kerberos_service_name,
-                'sasl_kerberos_domain_name':
-                    credentials.kerberos_domain_name,
-                'ssl_context': credentials.ssl_context,
-            }
-        else:
-            raise ImproperlyConfigured(
-                f'aiokafka does not support {credentials}')
-    elif ssl_context is not None:
-        return {
-            'security_protocol': 'SSL',
-            'ssl_context': ssl_context,
-        }
-    else:
-        return {'security_protocol': 'PLAINTEXT'}
