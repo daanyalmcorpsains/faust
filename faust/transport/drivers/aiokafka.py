@@ -31,6 +31,9 @@ from aiokafka.errors import (
     IllegalStateError,
     KafkaError,
 )
+
+from faust.utils.brokercredentials import BrokerCredentialsMixin
+
 from aiokafka.structs import (
     OffsetAndMetadata,
     TopicPartition as _TopicPartition,
@@ -264,7 +267,7 @@ class Consumer(ThreadDelegateConsumer):
         transport._topic_waiters.clear()
 
 
-class AIOKafkaConsumerThread(ConsumerThread):
+class AIOKafkaConsumerThread(BrokerCredentialsMixin,ConsumerThread ):
     _consumer: Optional[aiokafka.AIOKafkaConsumer] = None
     _pending_rebalancing_spans: Deque[opentracing.Span]
 
@@ -326,8 +329,7 @@ class AIOKafkaConsumerThread(ConsumerThread):
         if self.consumer.in_transaction:
             isolation_level = 'read_committed'
         self._assignor = self.app.assignor
-        auth_settings = credentials_to_aiokafka_auth(
-            conf.broker_credentials, conf.ssl_context)
+        auth_settings = self.get_auth_credentials(client='aiokafka')
         max_poll_interval = conf.broker_max_poll_interval or 0
 
         request_timeout = conf.broker_request_timeout
@@ -374,8 +376,7 @@ class AIOKafkaConsumerThread(ConsumerThread):
             transport: 'Transport',
             loop: asyncio.AbstractEventLoop) -> aiokafka.AIOKafkaConsumer:
         conf = self.app.conf
-        auth_settings = credentials_to_aiokafka_auth(
-            conf.broker_credentials, conf.ssl_context)
+        auth_settings = self.get_auth_credentials(client='aiokafka')
         max_poll_interval = conf.broker_max_poll_interval or 0
         return aiokafka.AIOKafkaConsumer(
             loop=loop,

@@ -36,6 +36,8 @@ from faust.transport.consumer import (
 from faust.types import AppT, ConsumerMessage, HeadersArg, RecordMetadata, TP
 from faust.types.transports import ConsumerT, ProducerT
 
+from faust.utils.brokercredentials import BrokerCredentialsMixin
+
 import confluent_kafka
 from confluent_kafka import TopicPartition as _TopicPartition
 from confluent_kafka import KafkaException
@@ -126,7 +128,7 @@ class Consumer(ThreadDelegateConsumer):
         return cast(TP, _TopicPartition(topic, partition))
 
 
-class ConfluentConsumerThread(ConsumerThread):
+class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
     """Thread managing underlying :pypi:`confluent_kafka` consumer."""
 
     _consumer: Optional[_Consumer] = None
@@ -139,52 +141,103 @@ class ConfluentConsumerThread(ConsumerThread):
             self,
             loop: asyncio.AbstractEventLoop) -> _Consumer:
         transport = cast(Transport, self.transport)
+        conf = self.app.conf
+        auth_settings  = self.get_auth_credentials(client='confluent')
         if self.app.client_only:
-            return self._create_client_consumer(transport, loop=loop)
+            return self._create_client_consumer(transport, loop=loop, credentials=auth_settings)
         else:
-            return self._create_worker_consumer(transport, loop=loop)
+            return self._create_worker_consumer(transport, loop=loop, credentials=auth_settings)
 
     def _create_worker_consumer(
             self,
             transport: 'Transport',
-            loop: asyncio.AbstractEventLoop) -> _Consumer:
+            loop: asyncio.AbstractEventLoop,
+            credentials: Mapping = None) -> _Consumer:
         conf = self.app.conf
         self._assignor = self.app.assignor
 
         # XXX parition.assignment.strategy is string
         # need to write C wrapper for this
         # 'partition.assignment.strategy': [self._assignor]
-        return confluent_kafka.Consumer({
-            'bootstrap.servers': server_list(
-                transport.url, transport.default_port),
-            'group.id': conf.id,
-            'client.id': conf.broker_client_id,
-            'default.topic.config': {
-                'auto.offset.reset': 'earliest',
-            },
-            'enable.auto.commit': False,
-            'fetch.max.bytes': conf.consumer_max_fetch_size,
-            'request.timeout.ms': int(conf.broker_request_timeout * 1000.0),
-            'check.crcs': conf.broker_check_crcs,
-            'session.timeout.ms': int(conf.broker_session_timeout * 1000.0),
-            'heartbeat.interval.ms': int(
-                conf.broker_heartbeat_interval * 1000.0),
-        })
+
+        if credentials:
+            return confluent_kafka.Consumer({
+                'bootstrap.servers': server_list(
+                    transport.url, transport.default_port),
+                'group.id': conf.id,
+                'client.id': conf.broker_client_id,
+                'default.topic.config': {
+                    'auto.offset.reset': 'earliest',
+                },
+                'enable.auto.commit': False,
+                'fetch.max.bytes': conf.consumer_max_fetch_size,
+                'request.timeout.ms': int(conf.broker_request_timeout * 1000.0),
+                'check.crcs': conf.broker_check_crcs,
+                'session.timeout.ms': int(conf.broker_session_timeout * 1000.0),
+                'heartbeat.interval.ms': int(
+                    conf.broker_heartbeat_interval * 1000.0),
+                'security.protocol': credentials['security_protocol'],
+                'sasl.username': credentials.get('sasl_plain_username'),
+                'sasl.password': credentials.get('sasl_plain_password'),
+                'sasl.mechanism': credentials.get('sasl_mechanism'),
+                'ssl.context': credentials.get('ssl_context'),
+                'sasl.kerberos.service.name': credentials.get('sasl_kerberos_service_name')
+
+
+
+            })
+        else:
+            return confluent_kafka.Consumer({
+                'bootstrap.servers': server_list(
+                    transport.url, transport.default_port),
+                'group.id': conf.id,
+                'client.id': conf.broker_client_id,
+                'default.topic.config': {
+                    'auto.offset.reset': 'earliest',
+                },
+                'enable.auto.commit': False,
+                'fetch.max.bytes': conf.consumer_max_fetch_size,
+                'request.timeout.ms': int(conf.broker_request_timeout * 1000.0),
+                'check.crcs': conf.broker_check_crcs,
+                'session.timeout.ms': int(conf.broker_session_timeout * 1000.0),
+                'heartbeat.interval.ms': int(
+                    conf.broker_heartbeat_interval * 1000.0),
+            })
 
     def _create_client_consumer(
             self,
             transport: 'Transport',
-            loop: asyncio.AbstractEventLoop) -> _Consumer:
+            loop: asyncio.AbstractEventLoop,
+            credentials: Mapping = None) -> _Consumer:
         conf = self.app.conf
-        return confluent_kafka.Consumer({
-            'bootstrap.servers': server_list(
-                transport.url, transport.default_port),
-            'client.id': conf.broker_client_id,
-            'enable.auto.commit': True,
-            'default.topic.config': {
-                'auto.offset.reset': 'earliest',
-            },
-        })
+
+        if credentials:
+            return confluent_kafka.Consumer({
+                'bootstrap.servers': server_list(
+                    transport.url, transport.default_port),
+                'client.id': conf.broker_client_id,
+                'enable.auto.commit': True,
+                'default.topic.config': {
+                    'auto.offset.reset': 'earliest',
+
+                },
+                'security.protocol': credentials['security_protocol'],
+                'sasl.username': credentials.get('sasl_plain_username'),
+                'sasl.password': credentials.get('sasl_plain_password'),
+                'sasl.mechanism': credentials.get('sasl_mechanism'),
+                'ssl.context': credentials.get('ssl_context'),
+                'sasl.kerberos.service.name': credentials.get('sasl_kerberos_service_name')
+            })
+        else:
+            return confluent_kafka.Consumer({
+                'bootstrap.servers': server_list(
+                    transport.url, transport.default_port),
+                'client.id': conf.broker_client_id,
+                'enable.auto.commit': True,
+                'default.topic.config': {
+                    'auto.offset.reset': 'earliest',
+                },
+            })
 
     def close(self) -> None:
         ...
@@ -373,7 +426,7 @@ class ProducerProduceFuture(asyncio.Future):
         return RecordMetadata(topic, partition, tp, message.offset())
 
 
-class ProducerThread(QueueServiceThread):
+class ProducerThread(BrokerCredentialsMixin,QueueServiceThread):
     """Thread managing underlying :pypi:`confluent_kafka` producer."""
 
     app: AppT
@@ -386,7 +439,8 @@ class ProducerThread(QueueServiceThread):
         self.producer = producer
         self.transport = cast(Transport, self.producer.transport)
         self.app = self.transport.app
-        super().__init__(**kwargs)
+        self.credentials = self.get_auth_credentials(client='confluent')
+        super(BrokerCredentialsMixin,self).__init__(**kwargs)
 
     async def on_start(self) -> None:
         self._producer = confluent_kafka.Producer({
@@ -394,6 +448,12 @@ class ProducerThread(QueueServiceThread):
                 self.transport.url, self.transport.default_port),
             'client.id': self.app.conf.broker_client_id,
             'max.in.flight.requests.per.connection': 1,
+            'security.protocol': self.credentials['security_protocol'],
+            'sasl.username': self.credentials.get('sasl_plain_username'),
+            'sasl.password': self.credentials.get('sasl_plain_password'),
+            'sasl.mechanism': self.credentials.get('sasl_mechanism'),
+            'ssl.context': self.credentials.get('ssl_context'),
+            'sasl.kerberos.service.name': self.credentials.get('sasl_kerberos_service_name')
         })
 
     async def flush(self) -> None:
