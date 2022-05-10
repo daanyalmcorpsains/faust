@@ -14,8 +14,11 @@ class BrokerCredentialsMixin:
     def __init__(self):
         pass
 
-    def get_auth_credentials(self, credentials=self.app.conf.broker_credentials,
-                             ssl_context=self.app.conf.ssl_context, client=None) -> Mapping:
+    def get_auth_credentials(self, client=None) -> Mapping:
+
+        credentials = self.app.conf.broker_credentials
+        ssl_context = self.app.conf.ssl_context
+
         if credentials is not None:
             if isinstance(credentials, SSLCredentials):
                 return {
