@@ -180,7 +180,6 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
                 'sasl.username': credentials.get('sasl_plain_username'),
                 'sasl.password': credentials.get('sasl_plain_password'),
                 'sasl.mechanism': credentials.get('sasl_mechanism'),
-                'ssl.context': credentials.get('ssl_context'),
                 'sasl.kerberos.service.name': credentials.get('sasl_kerberos_service_name')
 
 
@@ -225,7 +224,6 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
                 'sasl.username': credentials.get('sasl_plain_username'),
                 'sasl.password': credentials.get('sasl_plain_password'),
                 'sasl.mechanism': credentials.get('sasl_mechanism'),
-                'ssl.context': credentials.get('ssl_context'),
                 'sasl.kerberos.service.name': credentials.get('sasl_kerberos_service_name')
             })
         else:
@@ -452,7 +450,6 @@ class ProducerThread(BrokerCredentialsMixin,QueueServiceThread):
             'sasl.username': self.credentials.get('sasl_plain_username'),
             'sasl.password': self.credentials.get('sasl_plain_password'),
             'sasl.mechanism': self.credentials.get('sasl_mechanism'),
-            'ssl.context': self.credentials.get('ssl_context'),
             'sasl.kerberos.service.name': self.credentials.get('sasl_kerberos_service_name')
         })
 
