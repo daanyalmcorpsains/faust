@@ -249,22 +249,15 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
             on_revoke=self._on_revoke,
         )
         while not self._assigned:
-            self.log.info(f'assigned = {self._assigned}')
             self.log.info('Still waiting for assignment...')
-
-    # async def concurrent_poll(self):
-    #     with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-    #         future = executor.submit(self._ensure_consumer().poll(timeout=1))
-    #         awaitable = await asyncio.wrap_future(future)
-    #         return awaitable
+            self._ensure_consumer().poll(timeout=1)
 
     def _on_assign(self,
                    consumer: _Consumer,
                    assigned: List[_TopicPartition]) -> None:
         self._assigned = True
         self.log.info('does it reach here')
-        x = self.thread_loop._check_thread()
-        self.thread_loop.run_until_complete(
+        self.parent_loop.run_until_complete(
             self.on_partitions_assigned(
                 {TP(tp.topic, tp.partition) for tp in assigned}))
 
