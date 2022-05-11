@@ -253,20 +253,14 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
             self.log.info('Still waiting for assignment...')
             self._ensure_consumer().poll(timeout=1)
 
-    def _on_assign(self, consumer: _Consumer,
+    def _on_assign(self,
+                   consumer: _Consumer,
                    assigned: List[_TopicPartition]) -> None:
         self._assigned = True
         self.log.info('does it reach here')
         x = self.parent_loop._check_thread()
-        _on_assign_thread = Thread(target=self.run_partitions_assigned, args=(consumer, assigned))
-        _on_assign_thread.start()
-
-    def run_partitions_assigned(self, consumer: _Consumer,
-                                assigned: List[_TopicPartition]) -> None:
-        self.thread_loop.run_until_complete(
-                self.on_partitions_assigned(
-                    {TP(tp.topic, tp.partition) for tp in assigned}))
-        self.thread_loop.close()
+        await self.on_partitions_assigned(
+                    {TP(tp.topic, tp.partition) for tp in assigned})
 
     def _on_revoke(self,
                    consumer: _Consumer,
