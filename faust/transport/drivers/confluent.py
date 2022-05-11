@@ -249,6 +249,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
             on_revoke=self._on_revoke,
         )
         while not self._assigned:
+            self.log.info(f'assigned = {self._assigned}')
             self.log.info('Still waiting for assignment...')
 
     # async def concurrent_poll(self):
