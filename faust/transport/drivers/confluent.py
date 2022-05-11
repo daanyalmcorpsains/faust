@@ -253,7 +253,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
             self.log.info('Still waiting for assignment...')
             self._ensure_consumer().poll(timeout=1)
 
-    def _on_assign(self,
+    async def _on_assign(self,
                    consumer: _Consumer,
                    assigned: List[_TopicPartition]) -> None:
         self._assigned = True
