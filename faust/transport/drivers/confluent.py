@@ -257,7 +257,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
                    assigned: List[_TopicPartition]) -> None:
         self._assigned = True
         self.log.info('does it reach here')
-        x = self.parent_loop.check_thread()
+        x = self.parent_loop._check_thread()
         self.parent_loop.run_until_complete(
             self.on_partitions_assigned(
                 {TP(tp.topic, tp.partition) for tp in assigned}))
