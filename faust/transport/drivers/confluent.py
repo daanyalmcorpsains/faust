@@ -250,13 +250,12 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         )
         while not self._assigned:
             self.log.info('Still waiting for assignment...')
-            await self.concurrent_poll()
 
-    async def concurrent_poll(self):
-        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-            future = executor.submit(self._ensure_consumer().poll(timeout=1))
-            awaitable = await asyncio.wrap_future(future)
-            return awaitable
+    # async def concurrent_poll(self):
+    #     with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+    #         future = executor.submit(self._ensure_consumer().poll(timeout=1))
+    #         awaitable = await asyncio.wrap_future(future)
+    #         return awaitable
 
     def _on_assign(self,
                    consumer: _Consumer,
