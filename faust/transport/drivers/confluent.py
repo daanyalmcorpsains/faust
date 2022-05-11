@@ -1,6 +1,7 @@
 """Message transport using :pypi:`confluent_kafka`."""
 import asyncio
 import typing
+from threading import Thread
 import concurrent.futures
 from collections import defaultdict
 from typing import (
@@ -252,15 +253,19 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
             self.log.info('Still waiting for assignment...')
             self._ensure_consumer().poll(timeout=1)
 
-    def _on_assign(self,
-                   consumer: _Consumer,
-                   assigned: List[_TopicPartition]) -> None:
+    def _on_assign(self) -> None:
         self._assigned = True
         self.log.info('does it reach here')
         x = self.parent_loop._check_thread()
-        self.parent_loop.run_until_complete(
-            self.on_partitions_assigned(
-                {TP(tp.topic, tp.partition) for tp in assigned}))
+        _on_assign_thread = Thread(target=self.run_partitions_assigned)
+        _on_assign_thread.start()
+
+    def run_partitions_assigned(self, consumer: _Consumer,
+                                assigned: List[_TopicPartition]) -> None:
+        self.thread_loop.run_until_complete(
+                self.on_partitions_assigned(
+                    {TP(tp.topic, tp.partition) for tp in assigned}))
+        self.thread_loop.close()
 
     def _on_revoke(self,
                    consumer: _Consumer,
