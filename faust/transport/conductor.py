@@ -268,9 +268,10 @@ class Conductor(ConductorT, Service):
             await self.app.tables.wait_until_tables_registered()
         if not self.should_stop:
             # tell the consumer to subscribe to the topics.
+            self.log.info('The agent is getting stuck at subscribe')
             await self.app.consumer.subscribe(await self._update_indices())
             notify(self._subscription_done)
-
+            self.log.info('was the subscribe successfully.')
             # Now we wait for changes
             ev = self._subscription_changed = asyncio.Event(loop=self.loop)
         while not self.should_stop:

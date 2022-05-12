@@ -1,5 +1,6 @@
 """Message transport using :pypi:`confluent_kafka`."""
 import asyncio
+import logging
 import typing
 from threading import Thread
 import concurrent.futures
@@ -243,6 +244,8 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
 
     async def subscribe(self, topics: Iterable[str]) -> None:
         # XXX pattern does not work :/
+
+        self.log.info('call to this subscribe is made Daanyal')
         await self.call_thread(
             self._ensure_consumer().subscribe,
             topics=list(topics),
@@ -250,14 +253,20 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
             on_revoke=self._on_revoke,
         )
 
-    async def _on_assign(self,
+        while not self._assigned:
+            self.log.info('Still waiting for assignment...')
+            self._ensure_consumer().poll(timeout=1)
+
+    def _on_assign(self,
                    consumer: _Consumer,
                    assigned: List[_TopicPartition]) -> None:
         self._assigned = True
-        self.log.info('does it reach here')
-        x = self.parent_loop._check_thread()
-        await self.on_partitions_assigned(
-                    {TP(tp.topic, tp.partition) for tp in assigned})
+
+        self.log.info('the call to on_assign is also reached Daanyal.')
+        self.thread_loop.run_until_complete(
+            self.on_partitions_assigned(
+                {TP(tp.topic, tp.partition) for tp in assigned}))
+        logging.info('does it complete successfully')
 
     def _on_revoke(self,
                    consumer: _Consumer,
