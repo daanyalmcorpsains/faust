@@ -1,5 +1,6 @@
 """Message transport using :pypi:`confluent_kafka`."""
 import asyncio
+import logging
 import typing
 from threading import Thread
 import concurrent.futures
@@ -261,6 +262,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         self.thread_loop.run_until_complete(
             self.on_partitions_assigned(
                 {TP(tp.topic, tp.partition) for tp in assigned}))
+        logging.info('does it complete successfully')
 
     def _on_revoke(self,
                    consumer: _Consumer,

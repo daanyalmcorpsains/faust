@@ -270,7 +270,7 @@ class Conductor(ConductorT, Service):
             # tell the consumer to subscribe to the topics.
             await self.app.consumer.subscribe(await self._update_indices())
             notify(self._subscription_done)
-
+            self.log.info('was the subscribe successfully.')
             # Now we wait for changes
             ev = self._subscription_changed = asyncio.Event(loop=self.loop)
         while not self.should_stop:
