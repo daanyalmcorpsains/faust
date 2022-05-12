@@ -255,6 +255,8 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
 
         while not self._assigned:
             self.log.info('Still waiting for assignment...')
+            if self._assigned:
+                break
 
     def _on_assign(self,
                    consumer: _Consumer,
