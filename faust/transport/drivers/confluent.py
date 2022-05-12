@@ -244,6 +244,8 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
 
     async def subscribe(self, topics: Iterable[str]) -> None:
         # XXX pattern does not work :/
+
+        self.log.info('call to this subscribe is made Daanyal')
         await self.call_thread(
             self._ensure_consumer().subscribe,
             topics=list(topics),
@@ -259,6 +261,8 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
                    consumer: _Consumer,
                    assigned: List[_TopicPartition]) -> None:
         self._assigned = True
+
+        self.log.info('the call to on_assign is also reached Daanyal.')
         self.thread_loop.run_until_complete(
             self.on_partitions_assigned(
                 {TP(tp.topic, tp.partition) for tp in assigned}))
