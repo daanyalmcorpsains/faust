@@ -249,9 +249,6 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
             on_assign=self._on_assign,
             on_revoke=self._on_revoke,
         )
-        while not self._assigned:
-            self.log.info('Still waiting for assignment...')
-            self._ensure_consumer().poll(timeout=1)
 
     async def _on_assign(self,
                    consumer: _Consumer,
