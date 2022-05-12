@@ -131,7 +131,7 @@ class Consumer(ThreadDelegateConsumer):
         return cast(TP, _TopicPartition(topic, partition))
 
 
-class ConfluentConsumerThread(BrokerCredentialsMixin, ConsumerThread):
+class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
     """Thread managing underlying :pypi:`confluent_kafka` consumer."""
 
     _consumer: Optional[_Consumer] = None
@@ -164,6 +164,7 @@ class ConfluentConsumerThread(BrokerCredentialsMixin, ConsumerThread):
         # 'partition.assignment.strategy': [self._assignor]
 
         if credentials:
+            logging.info(f'Daanyal these are the creds {credentials}')
             return confluent_kafka.Consumer({
                 'bootstrap.servers': server_list(
                     transport.url, transport.default_port),
