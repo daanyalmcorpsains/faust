@@ -131,7 +131,7 @@ class Consumer(ThreadDelegateConsumer):
         return cast(TP, _TopicPartition(topic, partition))
 
 
-class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
+class ConfluentConsumerThread(BrokerCredentialsMixin, ConsumerThread):
     """Thread managing underlying :pypi:`confluent_kafka` consumer."""
 
     _consumer: Optional[_Consumer] = None
