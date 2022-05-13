@@ -23,6 +23,7 @@ import sys
 import typing
 
 from typing import Any, Mapping, NamedTuple, Optional, Sequence, Tuple
+import nest_asyncio
 
 __version__ = '1.11.0a1'
 __author__ = 'Robinhood Markets, Inc.'
@@ -31,6 +32,8 @@ __homepage__ = 'http://faust.readthedocs.io/'
 __docformat__ = 'restructuredtext'
 
 # -eof meta-
+
+nest_asyncio.apply()
 
 
 class VersionInfo(NamedTuple):
