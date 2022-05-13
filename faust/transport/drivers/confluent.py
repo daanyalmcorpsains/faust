@@ -250,16 +250,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         # XXX pattern does not work :/
 
         self.log.info('call to this subscribe is made Daanyal')
-        await self.call_thread(
-            self._ensure_consumer().subscribe,
-            topics=list(topics),
-            on_assign=self._on_assign,
-            on_revoke=self._on_revoke,
-        )
-
-        while not self._assigned:
-            self.log.info('Still waiting for assignment...')
-            self._ensure_consumer().poll(timeout=1)
+        await self._thread.subscribe(topics=topics)
 
     def _on_assign(self,
                    consumer: _Consumer,
