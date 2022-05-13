@@ -145,7 +145,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
             loop: asyncio.AbstractEventLoop) -> _Consumer:
         transport = cast(Transport, self.transport)
         conf = self.app.conf
-        auth_settings  = self.get_auth_credentials(client='confluent')
+        auth_settings = self.get_auth_credentials(client='confluent')
         if self.app.client_only:
             return self._create_client_consumer(transport, loop=loop, credentials=auth_settings)
         else:
@@ -249,18 +249,25 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
     async def subscribe(self, topics: Iterable[str]) -> None:
         # XXX pattern does not work :/
 
-        self.log.info('call to this subscribe is made Daanyal')
-        await self._thread.subscribe(topics=topics)
+        await self.call_thread(
+            self._ensure_consumer().subscribe,
+            topics=list(topics),
+            on_assign=self._on_assign,
+            on_revoke=self._on_revoke,
+        )
+
+        while not self._assigned:
+            self.log.info('Still waiting for assignment...')
+            self._ensure_consumer().poll(timeout=1)
 
     def _on_assign(self,
                    consumer: _Consumer,
                    assigned: List[_TopicPartition]) -> None:
         self._assigned = True
-        time.sleep(5)
         self.log.info('the call to on_assign is also reached Daanyal.')
-        # self.thread_loop.run_until_complete(
-        #     self.on_partitions_assigned(
-        #         {TP(tp.topic, tp.partition) for tp in assigned}))
+        self.thread_loop.run_until_complete(
+            self.on_partitions_assigned(
+                {TP(tp.topic, tp.partition) for tp in assigned}))
         logging.info('does it complete successfully')
 
     def _on_revoke(self,
