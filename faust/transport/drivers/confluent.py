@@ -219,6 +219,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
                 'bootstrap.servers': server_list(
                     transport.url, transport.default_port),
                 'client.id': conf.broker_client_id,
+                'group.id': conf.id,
                 'enable.auto.commit': True,
                 'default.topic.config': {
                     'auto.offset.reset': 'earliest',
@@ -235,6 +236,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
                 'bootstrap.servers': server_list(
                     transport.url, transport.default_port),
                 'client.id': conf.broker_client_id,
+                'group.id': conf.id,
                 'enable.auto.commit': True,
                 'default.topic.config': {
                     'auto.offset.reset': 'earliest',
@@ -265,9 +267,9 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         self._assigned = True
         time.sleep(5)
         self.log.info('the call to on_assign is also reached Daanyal.')
-        self.thread_loop.run_until_complete(
-            self.on_partitions_assigned(
-                {TP(tp.topic, tp.partition) for tp in assigned}))
+        # self.thread_loop.run_until_complete(
+        #     self.on_partitions_assigned(
+        #         {TP(tp.topic, tp.partition) for tp in assigned}))
         logging.info('does it complete successfully')
 
     def _on_revoke(self,
