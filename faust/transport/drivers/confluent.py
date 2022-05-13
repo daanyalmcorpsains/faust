@@ -266,9 +266,8 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
                    assigned: List[_TopicPartition]) -> None:
         self._assigned = True
         self.log.info('the call to on_assign is also reached Daanyal.')
-        self.thread_loop.run_until_complete(
-            self.on_partitions_assigned(
-                {TP(tp.topic, tp.partition) for tp in assigned}))
+        await self.on_partitions_assigned(
+                {TP(tp.topic, tp.partition) for tp in assigned})
         logging.info('does it complete successfully')
 
     def _on_revoke(self,
