@@ -249,6 +249,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
     async def subscribe(self, topics: Iterable[str]) -> None:
         # XXX pattern does not work :/
 
+        self.log.info(f'topics to subscribe to are {topics} ')
         await self.call_thread(
             self._ensure_consumer().subscribe,
             topics=list(topics),
