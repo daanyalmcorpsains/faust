@@ -298,6 +298,7 @@ class Recovery(Service):
     async def _resume_streams(self) -> None:
         app = self.app
         consumer = app.consumer
+        self.log.info('Daanyal do we get to the point of waitinf to resume flow.')
         await app.on_rebalance_complete.send()
         # Resume partitions and start fetching.
         self.log.info('Resuming flow...')
