@@ -276,9 +276,6 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
     def _on_revoke(self,
                    consumer: _Consumer,
                    revoked: List[_TopicPartition]) -> None:
-
-        self.thread_loop._check_thread()
-        self.
         self.thread_loop.run_until_complete(
             self.on_partitions_revoked(
                 {TP(tp.topic, tp.partition) for tp in revoked}))
