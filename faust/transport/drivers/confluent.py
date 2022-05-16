@@ -266,8 +266,6 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
                    assigned: List[_TopicPartition]) -> None:
         self._assigned = True
         self.log.info('the call to on_assign is also reached Daanyal.')
-        self.parent_loop._check_thread()
-        self.thread_loop._check_thread()
         asyncio.run_coroutine_threadsafe(self.on_partitions_assigned(
                 {TP(tp.topic, tp.partition) for tp in assigned}), self.thread_loop)
         logging.info('does it complete successfully')
