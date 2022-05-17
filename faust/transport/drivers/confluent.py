@@ -250,10 +250,12 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         # XXX pattern does not work :/
 
         self.log.info(f'topics to subscribe to are {topics} ')
-        self._ensure_consumer().subscribe(
+        await self.call_thread(
+            self._ensure_consumer().subscribe,
             topics=list(topics),
             on_assign=self._on_assign,
-            on_revoke=self._on_revoke,)
+            on_revoke=self._on_revoke,
+        )
 
         while not self._assigned:
             self.log.info('Still waiting for assignment...')
@@ -264,8 +266,9 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
                    assigned: List[_TopicPartition]) -> None:
         self._assigned = True
         self.log.info('the call to on_assign is also reached Daanyal.')
-        asyncio.run_coroutine_threadsafe(self.on_partitions_assigned(
-                {TP(tp.topic, tp.partition) for tp in assigned}), self.thread_loop)
+        self.consumer._thread.run_until_complete(
+            self.on_partitions_assigned(
+                {TP(tp.topic, tp.partition) for tp in assigned}))
         logging.info('does it complete successfully')
 
     def _on_revoke(self,
