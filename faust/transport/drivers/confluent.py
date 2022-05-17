@@ -50,12 +50,18 @@ if typing.TYPE_CHECKING:
     from confluent_kafka import Producer as _Producer
     from confluent_kafka import Message as _Message
 else:
-    class _Consumer: ...  # noqa
-    class _Producer: ...  # noqa
-    class _Message: ...   # noqa
+    class _Consumer:
+        ...  # noqa
+
+
+    class _Producer:
+        ...  # noqa
+
+
+    class _Message:
+        ...  # noqa
 
 __all__ = ['Consumer', 'Producer', 'Transport']
-
 
 logger = get_logger(__name__)
 
@@ -131,18 +137,38 @@ class Consumer(ThreadDelegateConsumer):
         return cast(TP, _TopicPartition(topic, partition))
 
 
+class ConfluentCallbacks:
+
+    def __init__(self, thread: 'ConsumerThread') -> None:
+        self._thread: 'ConsumerThread' = thread
+
+    async def on_partitions_revoked(
+                                    self, revoked: Iterable[_TopicPartition]) -> None:
+        await self._thread.on_partitions_revoked(
+            {TP(tp.topic, tp.partition) for tp in revoked})
+
+    async def on_partitions_assigned(
+                                     self, assigned: Iterable[_TopicPartition]) -> None:
+        await self._thread.on_partitions_assigned(
+            {TP(tp.topic, tp.partition) for tp in assigned})
+
+
 class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
     """Thread managing underlying :pypi:`confluent_kafka` consumer."""
 
     _consumer: Optional[_Consumer] = None
     _assigned: bool = False
 
+    def __init__(self, **kwargs: Any):
+        self.confluentcallbacks = ConfluentCallbacks(self)
+        super().__init__(**kwargs)
+
     async def on_start(self) -> None:
         self._consumer = self._create_consumer(loop=self.thread_loop)
 
     def _create_consumer(
-            self,
-            loop: asyncio.AbstractEventLoop) -> _Consumer:
+        self,
+        loop: asyncio.AbstractEventLoop) -> _Consumer:
         transport = cast(Transport, self.transport)
         conf = self.app.conf
         auth_settings = self.get_auth_credentials(client='confluent')
@@ -152,10 +178,10 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
             return self._create_worker_consumer(transport, loop=loop, credentials=auth_settings)
 
     def _create_worker_consumer(
-            self,
-            transport: 'Transport',
-            loop: asyncio.AbstractEventLoop,
-            credentials: Mapping = None) -> _Consumer:
+        self,
+        transport: 'Transport',
+        loop: asyncio.AbstractEventLoop,
+        credentials: Mapping = None) -> _Consumer:
         conf = self.app.conf
         self._assignor = self.app.assignor
 
@@ -186,8 +212,6 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
                 'sasl.mechanism': credentials.get('sasl_mechanism'),
                 'sasl.kerberos.service.name': credentials.get('sasl_kerberos_service_name')
 
-
-
             })
         else:
             return confluent_kafka.Consumer({
@@ -208,10 +232,10 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
             })
 
     def _create_client_consumer(
-            self,
-            transport: 'Transport',
-            loop: asyncio.AbstractEventLoop,
-            credentials: Mapping = None) -> _Consumer:
+        self,
+        transport: 'Transport',
+        loop: asyncio.AbstractEventLoop,
+        credentials: Mapping = None) -> _Consumer:
         conf = self.app.conf
 
         if credentials:
@@ -266,8 +290,8 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
                    assigned: List[_TopicPartition]) -> None:
         self._assigned = True
         self.log.info('the call to on_assign is also reached Daanyal.')
-        self.consumer._thread.run_until_complete(
-            self.on_partitions_assigned(
+        self.thread_loop.run_until_complete(
+            self.confluentcallbacks.on_partitions_assigned(
                 {TP(tp.topic, tp.partition) for tp in assigned}))
         logging.info('does it complete successfully')
 
@@ -275,7 +299,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
                    consumer: _Consumer,
                    revoked: List[_TopicPartition]) -> None:
         self.thread_loop.run_until_complete(
-            self.on_partitions_revoked(
+            self.confluentcallbacks.on_partitions_revoked(
                 {TP(tp.topic, tp.partition) for tp in revoked}))
 
     async def seek_to_committed(self) -> Mapping[TP, int]:
@@ -290,7 +314,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         return {ensure_TP(tp): tp.offset for tp in committed}
 
     async def _committed_offsets(
-            self, partitions: List[TP]) -> MutableMapping[TP, int]:
+        self, partitions: List[TP]) -> MutableMapping[TP, int]:
         consumer = self._ensure_consumer()
         committed = consumer.committed(
             [_TopicPartition(tp[0], tp[1]) for tp in partitions])
@@ -354,7 +378,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         return await self.call_thread(self._earliest_offsets, partitions)
 
     async def _earliest_offsets(
-            self, partitions: List[TP]) -> MutableMapping[TP, int]:
+        self, partitions: List[TP]) -> MutableMapping[TP, int]:
         consumer = self._ensure_consumer()
         return {
             tp: consumer.get_watermark_offsets(
@@ -368,7 +392,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         return await self.call_thread(self._highwaters, partitions)
 
     async def _highwaters(
-            self, partitions: List[TP]) -> MutableMapping[TP, int]:
+        self, partitions: List[TP]) -> MutableMapping[TP, int]:
         consumer = self._ensure_consumer()
         return {
             tp: consumer.get_watermark_offsets(
@@ -435,7 +459,7 @@ class ProducerProduceFuture(asyncio.Future):
         return RecordMetadata(topic, partition, tp, message.offset())
 
 
-class ProducerThread(BrokerCredentialsMixin,QueueServiceThread):
+class ProducerThread(BrokerCredentialsMixin, QueueServiceThread):
     """Thread managing underlying :pypi:`confluent_kafka` producer."""
 
     app: AppT
@@ -449,7 +473,7 @@ class ProducerThread(BrokerCredentialsMixin,QueueServiceThread):
         self.transport = cast(Transport, self.producer.transport)
         self.app = self.transport.app
         self.credentials = self.get_auth_credentials(client='confluent')
-        super(BrokerCredentialsMixin,self).__init__(**kwargs)
+        super(BrokerCredentialsMixin, self).__init__(**kwargs)
 
     async def on_start(self) -> None:
         self._producer = confluent_kafka.Producer({
