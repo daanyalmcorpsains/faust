@@ -289,6 +289,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
                    consumer: _Consumer,
                    assigned: List[_TopicPartition]) -> None:
         self._assigned = True
+        time.sleep(5)
         self.log.info('the call to on_assign is also reached Daanyal.')
         self.thread_loop.run_until_complete(
             self.confluentcallbacks.on_partitions_assigned(
