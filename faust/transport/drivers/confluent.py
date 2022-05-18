@@ -160,9 +160,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
     _assigned: bool = False
 
     def __init__(self, *args: Any, **kwargs: Any):
-        self.log.info('does it hit the initialise here correctly')
         self.confluentcallbacks = ConfluentCallbacks(self)
-        self.log.info('does it attempt the super')
         super().__init__(*args, **kwargs)
 
     async def on_start(self) -> None:
