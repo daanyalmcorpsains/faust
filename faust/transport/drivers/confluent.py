@@ -137,32 +137,12 @@ class Consumer(ThreadDelegateConsumer):
         return cast(TP, _TopicPartition(topic, partition))
 
 
-class ConfluentCallbacks:
-
-    def __init__(self, thread: 'ConsumerThread') -> None:
-        self._thread: 'ConsumerThread' = thread
-
-    async def on_partitions_revoked(
-                                    self, revoked: Iterable[_TopicPartition]) -> None:
-        await self._thread.on_partitions_revoked(
-            {TP(tp.topic, tp.partition) for tp in revoked})
-
-    async def on_partitions_assigned(
-                                     self, assigned: Iterable[_TopicPartition]) -> None:
-        await self._thread.on_partitions_assigned(
-            {TP(tp.topic, tp.partition) for tp in assigned})
-
-
 class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
     """Thread managing underlying :pypi:`confluent_kafka` consumer."""
 
     _consumer: Optional[_Consumer] = None
     _assigned: bool = False
-
-    def __init__(self, *args: Any, **kwargs: Any):
-        self.confluentcallbacks = ConfluentCallbacks(self)
-        self.topics = None
-        super().__init__(*args, **kwargs)
+    topics = []
 
     async def on_start(self) -> None:
         self._consumer = self._create_consumer(loop=self.thread_loop)
@@ -286,7 +266,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
             self.log.info('Still waiting for assignment...')
             self._ensure_consumer().poll(timeout=1)
 
-        await self.confluentcallbacks.on_partitions_assigned(assigned=self.topics)
+        await self.on_partitions_assigned({TP(tp.topic, tp.partition) for tp in self.topics})
 
     def _on_assign(self,
                    consumer: _Consumer,
@@ -298,7 +278,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
                    consumer: _Consumer,
                    revoked: List[_TopicPartition]) -> None:
         self.thread_loop.run_until_complete(
-            self.confluentcallbacks.on_partitions_revoked(
+            self.on_partitions_revoked(
                 {TP(tp.topic, tp.partition) for tp in revoked}))
 
     async def seek_to_committed(self) -> Mapping[TP, int]:
