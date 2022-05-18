@@ -286,8 +286,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
             self.log.info('Still waiting for assignment...')
             self._ensure_consumer().poll(timeout=1)
 
-        self.thread_loop.run_until_complete(
-            self.confluentcallbacks.on_partitions_assigned(assigned=self.topics))
+        await self.confluentcallbacks.on_partitions_assigned(assigned=self.topics)
 
     def _on_assign(self,
                    consumer: _Consumer,
