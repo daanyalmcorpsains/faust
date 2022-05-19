@@ -281,8 +281,8 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         await self.call_thread(
             self._ensure_consumer().subscribe,
             topics=list(topics),
-            on_assign=self._on_assign(),
-            on_revoke=self._on_revoke(),
+            on_assign=self._on_assign,
+            on_revoke=self._on_revoke,
         )
 
         while not self._assigned:
