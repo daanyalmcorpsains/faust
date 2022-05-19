@@ -143,12 +143,12 @@ class ConfluentCallbacks:
         self._thread: 'ConsumerThread' = thread
 
     async def on_partitions_revoked(
-                                    self, revoked: Iterable[_TopicPartition]) -> None:
+                                    self, revoked: Iterable[_TopicPartition], consumer: _Consumer) -> None:
         await self._thread.on_partitions_revoked(
             {TP(tp.topic, tp.partition) for tp in revoked})
 
     async def on_partitions_assigned(
-                                     self, assigned: Iterable[_TopicPartition]) -> None:
+                                     self, assigned: Iterable[_TopicPartition], consumer: _Consumer) -> None:
         await self._thread.on_partitions_assigned(
             {TP(tp.topic, tp.partition) for tp in assigned})
 
