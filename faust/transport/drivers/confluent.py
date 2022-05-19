@@ -161,7 +161,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
     topics = []
 
     def __init__(self, *args: Any, **kwargs: Any):
-        self.confluentcallbacks = ConfluentCallbacks()
+        self.confluentcallbacks = ConfluentCallbacks(self)
         super().__init__(*args, **kwargs)
 
     async def on_start(self) -> None:
