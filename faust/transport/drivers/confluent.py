@@ -285,7 +285,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
             on_revoke=self._on_revoke(),
         )
 
-        while not self.confluentcallbacks.stop_poll:
+        while not self._assigned:
             self.log.info('Still waiting for assignment...')
             self._ensure_consumer().poll(timeout=1)
         await self.confluentcallbacks.on_partitions_assigned(assigned=self.topics)
