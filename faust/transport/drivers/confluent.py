@@ -608,7 +608,6 @@ class Producer(base.Producer):
         fut = ProducerProduceFuture(loop=self.loop)
         self._quick_produce(
             topic, value, key, partition,
-            timestamp=int(timestamp * 1000) if timestamp else timestamp,
             on_delivery=fut.set_from_on_delivery,
         )
         return cast(Awaitable[RecordMetadata], fut)
