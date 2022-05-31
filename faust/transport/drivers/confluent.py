@@ -452,6 +452,7 @@ class ProducerProduceFuture(asyncio.Future):
             # object and not a string [ask].
             self.set_exception(err)
         else:
+            self.log.info(f'The message {msg} has been sent')
             metadata: RecordMetadata = self.message_to_metadata(msg)
             self.set_result(metadata)
 
