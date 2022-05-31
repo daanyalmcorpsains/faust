@@ -241,7 +241,8 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         loop: asyncio.AbstractEventLoop,
         credentials: Mapping = None) -> _Consumer:
         conf = self.app.conf
-
+        self.log.info(f'the consumer bootstrap servers are {transport.url} and port is {transport.default_port}')
+        self.log.info(f'consumer client id is {conf.broker_client_id}')
         if credentials:
             return confluent_kafka.Consumer({
                 'bootstrap.servers': server_list(
@@ -480,6 +481,7 @@ class ProducerThread(QueueServiceThread, BrokerCredentialsMixin):
 
     async def on_start(self) -> None:
         self.log.info(f'the producer creds are {self.credentials}')
+        self.log.info(f'the producer bootstrap servers are {self.transport.url} and port is {self.transport.default_port}')
         self._producer = confluent_kafka.Producer({
             'bootstrap.servers': server_list(
                 self.transport.url, self.transport.default_port),
