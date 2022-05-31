@@ -444,9 +444,6 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
 
 class ProducerProduceFuture(asyncio.Future):
     
-    def __init__(loop, logger):
-        self.log = logger
-        super().__init__(loop=loop)
 
     def set_from_on_delivery(self,
                              err: Optional[BaseException],
@@ -456,7 +453,7 @@ class ProducerProduceFuture(asyncio.Future):
             # object and not a string [ask].
             self.set_exception(err)
         else:
-            self.log.info(f'The message {msg} has been sent')
+            logger.info(f'The message {msg} has been sent')
             metadata: RecordMetadata = self.message_to_metadata(msg)
             self.set_result(metadata)
 
@@ -613,7 +610,7 @@ class Producer(base.Producer):
                    *,
                    transactional_id: str = None) -> Awaitable[RecordMetadata]:
         """Send message for future delivery."""
-        fut = ProducerProduceFuture(loop=self.loop, logger=self.log)
+        fut = ProducerProduceFuture(loop=self.loop)
         self._quick_produce(
             topic, value, key, partition,
             on_delivery=fut.set_from_on_delivery,
