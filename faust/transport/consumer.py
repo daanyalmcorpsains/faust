@@ -1052,6 +1052,7 @@ class Consumer(Service, ConsumerT):
                 await self.sleep(0)
                 if not self.should_stop:
                     async for tp, message in ait:
+                        self.log.info(f'the message currently being read is {message} partition is {tp}')
                         num_since_yield += 1
                         if num_since_yield > yield_every:
                             await sleep(0)
@@ -1063,14 +1064,20 @@ class Consumer(Service, ConsumerT):
                             gap = offset - (r_offset or 0)
                             # We have a gap in income messages
                             if gap > 1 and r_offset:
+                                self.log.info('this message has a gap.')
                                 acks_enabled = acks_enabled_for(message.topic)
+                                self.log.info('this message passes acks_enabled.')
                                 if acks_enabled:
                                     self._add_gap(tp, r_offset + 1, offset)
+                                    self.log.info('this message passes add_gap.')
                             if commit_every is not None:
+                                self.log.info(f'commit every is {commit_every}.')
                                 if self._n_acked >= commit_every:
                                     self._n_acked = 0
                                     await self.commit()
+                                    self.log.info(f'commit passes.')
                             await callback(message)
+                            self.log.info(f'callback for {message} passes.')
                             set_read_offset(tp, offset)
                         else:
                             self.log.dev('DROPPED MESSAGE ROFF %r: k=%r v=%r',
