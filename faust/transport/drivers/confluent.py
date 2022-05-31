@@ -443,6 +443,10 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
 
 
 class ProducerProduceFuture(asyncio.Future):
+    
+    def __init__(loop, logger):
+        self.log = logger
+        super().__init__(loop=loop)
 
     def set_from_on_delivery(self,
                              err: Optional[BaseException],
@@ -461,7 +465,7 @@ class ProducerProduceFuture(asyncio.Future):
         return RecordMetadata(topic, partition, tp, message.offset())
 
 
-class ProducerThread(BrokerCredentialsMixin, QueueServiceThread):
+class ProducerThread(QueueServiceThread, BrokerCredentialsMixin):
     """Thread managing underlying :pypi:`confluent_kafka` producer."""
 
     app: AppT
@@ -475,9 +479,10 @@ class ProducerThread(BrokerCredentialsMixin, QueueServiceThread):
         self.transport = cast(Transport, self.producer.transport)
         self.app = self.transport.app
         self.credentials = self.get_auth_credentials(client='confluent')
-        super(BrokerCredentialsMixin, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     async def on_start(self) -> None:
+        self.log.info(f'the producer creds are {self.credentials}')
         self._producer = confluent_kafka.Producer({
             'bootstrap.servers': server_list(
                 self.transport.url, self.transport.default_port),
@@ -503,10 +508,12 @@ class ProducerThread(BrokerCredentialsMixin, QueueServiceThread):
         if self._producer is None:
             raise RuntimeError('Producer not started')
         if partition is not None:
+            self.log.info(f'we attempt to actually send to the topic with client id {self.app.conf.broker_client_id} and partition {partition}.')
             self._producer.produce(
                 topic, key, value, partition, on_delivery=on_delivery,
             )
         else:
+            self.log.info(f'we attempt to actually send to the topic with client id {self.app.conf.broker_client_id} and no partition.')
             self._producer.produce(
                 topic, key, value, on_delivery=on_delivery,
             )
@@ -606,7 +613,7 @@ class Producer(base.Producer):
                    *,
                    transactional_id: str = None) -> Awaitable[RecordMetadata]:
         """Send message for future delivery."""
-        fut = ProducerProduceFuture(loop=self.loop)
+        fut = ProducerProduceFuture(loop=self.loop, logger=self.log)
         self._quick_produce(
             topic, value, key, partition,
             on_delivery=fut.set_from_on_delivery,
