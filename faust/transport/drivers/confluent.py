@@ -195,6 +195,8 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
 
         if credentials:
             logging.info(f'Daanyal these are the creds {credentials}')
+            self.log.info(f'the consumer bootstrap servers are {transport.url} and port is {transport.default_port}')
+            self.log.info(f'consumer client id is {conf.broker_client_id}')          
             return confluent_kafka.Consumer({
                 'bootstrap.servers': server_list(
                     transport.url, transport.default_port),
