@@ -442,7 +442,11 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         raise NotImplementedError('TODO')  # TODO XXX
 
 
-class ProducerProduceFuture(asyncio.Future, Service):
+class ProducerProduceFuture(asyncio.Future):
+    
+    def __init__(loop, logger):
+        self.log = logger
+        super().__init__(loop=loop)
 
     def set_from_on_delivery(self,
                              err: Optional[BaseException],
@@ -606,7 +610,7 @@ class Producer(base.Producer):
                    *,
                    transactional_id: str = None) -> Awaitable[RecordMetadata]:
         """Send message for future delivery."""
-        fut = ProducerProduceFuture(loop=self.loop)
+        fut = ProducerProduceFuture(loop=self.loop, logger=self.log)
         self._quick_produce(
             topic, value, key, partition,
             on_delivery=fut.set_from_on_delivery,
