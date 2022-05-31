@@ -442,7 +442,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         raise NotImplementedError('TODO')  # TODO XXX
 
 
-class ProducerProduceFuture(asyncio.Future):
+class ProducerProduceFuture(asyncio.Future, Service):
 
     def set_from_on_delivery(self,
                              err: Optional[BaseException],
