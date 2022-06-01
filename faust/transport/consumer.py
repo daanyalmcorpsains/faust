@@ -47,7 +47,7 @@ import abc
 import asyncio
 import gc
 import typing
-
+import copy
 from collections import defaultdict
 from time import monotonic
 from typing import (
@@ -1041,6 +1041,7 @@ class Consumer(Service, ConsumerT):
         yield_every = 100
         num_since_yield = 0
         sleep = asyncio.sleep
+        msg_err = ''
 
         try:
             while not (consumer_should_stop() or fetcher_should_stop()):
@@ -1052,6 +1053,7 @@ class Consumer(Service, ConsumerT):
                 await self.sleep(0)
                 if not self.should_stop:
                     async for tp, message in ait:
+                        msg_err = copy.copy(message)
                         self.log.info(f'the message currently being read is {message} partition is {tp}')
                         num_since_yield += 1
                         if num_since_yield > yield_every:
@@ -1097,6 +1099,7 @@ class Consumer(Service, ConsumerT):
                 return
             raise
         except Exception as exc:
+            self.log.exception(f'the message that cause this error is {msg_err}')
             self.log.exception('Drain messages raised: %r', exc)
             raise
         finally:
