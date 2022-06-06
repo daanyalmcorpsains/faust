@@ -1046,7 +1046,9 @@ class Consumer(Service, ConsumerT):
         try:
             while not (consumer_should_stop() or fetcher_should_stop()):
                 set_flag(flag_consumer_fetching)
+                self.log.info('Daanyal the flag is set.')
                 ait = cast(AsyncIterator, getmany(timeout=1.0))
+                self.log.info(f'Daanyal the ait is set. last message {msg_err}.')
 
                 # Sleeping because sometimes getmany is called in a loop
                 # never releasing to the event loop
@@ -1085,6 +1087,7 @@ class Consumer(Service, ConsumerT):
                             self.log.dev('DROPPED MESSAGE ROFF %r: k=%r v=%r',
                                          offset, message.key, message.value)
                     unset_flag(flag_consumer_fetching)
+                    self.log.info('Daanyal the flag is unset.')
 
         except self.consumer_stopped_errors:
             if self.transport.app.should_stop:
