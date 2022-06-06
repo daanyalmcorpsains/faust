@@ -1045,6 +1045,7 @@ class Consumer(Service, ConsumerT):
 
         try:
             while not (consumer_should_stop() or fetcher_should_stop()):
+                self.log.info('Daanyal the flag is about to be set.')
                 set_flag(flag_consumer_fetching)
                 self.log.info('Daanyal the flag is set.')
                 ait = cast(AsyncIterator, getmany(timeout=1.0))
