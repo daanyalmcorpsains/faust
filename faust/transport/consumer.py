@@ -1046,7 +1046,7 @@ class Consumer(Service, ConsumerT):
         try:
             while not (consumer_should_stop() or fetcher_should_stop()):
                 set_flag(flag_consumer_fetching)
-                results = getmany(timeout=1000.0)
+                results = getmany(timeout=2.0)
                 ait = cast(AsyncIterator, results)
                     
                 # Sleeping because sometimes getmany is called in a loop
