@@ -1050,11 +1050,8 @@ class Consumer(Service, ConsumerT):
                 self.log.info('Daanyal the flag is about to be set.')
                 set_flag(flag_consumer_fetching)
                 self.log.info('Daanyal the flag is set.')
-                results = getmany(timeout=1.0)
-                ait = cast(AsyncIterator, results)
+                ait = cast(AsyncIterator, getmany(timeout=1.0))
                 self.log.info(f'Daanyal the ait is set. last message {msg_err}.')
-                copy = dict(results)
-                results_dict.update(copy)
                 if first and not ait:
                     self.log.info(f'The length of complete results is {len(results_dict)}.')
                     first = False
@@ -1072,6 +1069,7 @@ class Consumer(Service, ConsumerT):
                             num_since_yield = 0
 
                         offset = message.offset
+                        results_dict[f'tp {tp} offset {offset}'] = message
                         r_offset = get_read_offset(tp)
                         if r_offset is None or offset > r_offset:
                             gap = offset - (r_offset or 0)
