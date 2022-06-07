@@ -417,7 +417,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         length = len(messages)
         self.log.info(f'the messages are of length {length}.')
         if messages:
-            self.log.info(f'the first message of this batch is {messages[0]}. The last message of this batch is {messages[-1]}')
+            self.log.info(f'the first message of this batch is {messages[0].value()}. The last message of this batch is {messages[-1].value()}')
         records: RecordMap = defaultdict(list)
         for message in messages:
             tp = TP(message.topic(), message.partition())
@@ -614,6 +614,7 @@ class Producer(base.Producer):
                    transactional_id: str = None) -> Awaitable[RecordMetadata]:
         """Send message for future delivery."""
         fut = ProducerProduceFuture(loop=self.loop)
+        logger.info(f'about to produce message with key {key} and value {value}.')
         self._quick_produce(
             topic, value, key, partition,
             on_delivery=fut.set_from_on_delivery,
