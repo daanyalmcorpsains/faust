@@ -414,6 +414,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         # Implementation for the Fetcher service.
         _consumer = self._ensure_consumer()
         messages = _consumer.consume(num_messages=10000,timeout=timeout)
+        self.log.info(f'the messages are of length {len(messages)}.')
         records: RecordMap = defaultdict(list)
         for message in messages:
             tp = TP(message.topic(), message.partition())
