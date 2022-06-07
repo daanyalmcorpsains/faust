@@ -1042,27 +1042,18 @@ class Consumer(Service, ConsumerT):
         num_since_yield = 0
         sleep = asyncio.sleep
         msg_err = ''
-        results_dict = {}
-        first = True
 
         try:
             while not (consumer_should_stop() or fetcher_should_stop()):
-                self.log.info('Daanyal the flag is about to be set.')
                 set_flag(flag_consumer_fetching)
-                self.log.info('Daanyal the flag is set.')
                 results = getmany(timeout=1.0)
                 ait = cast(AsyncIterator, results)
-                self.log.info(f'Daanyal the ait is set. last message {msg_err}.')
-                if first and not results:
-                    self.log.info(f'The length of complete results is {len(results_dict)}.')
-                    first = False
                     
                 # Sleeping because sometimes getmany is called in a loop
                 # never releasing to the event loop
                 await self.sleep(0)
                 if not self.should_stop:
                     async for tp, message in ait:
-                        msg_err = copy.copy(message)
                         self.log.info(f'the message currently being read is {message} partition is {tp}')
                         num_since_yield += 1
                         if num_since_yield > yield_every:
@@ -1070,7 +1061,6 @@ class Consumer(Service, ConsumerT):
                             num_since_yield = 0
 
                         offset = message.offset
-                        results_dict[f'tp {tp} offset {offset}'] = message
                         r_offset = get_read_offset(tp)
                         if r_offset is None or offset > r_offset:
                             gap = offset - (r_offset or 0)
