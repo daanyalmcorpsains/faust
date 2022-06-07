@@ -413,7 +413,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
                       timeout: float) -> RecordMap:
         # Implementation for the Fetcher service.
         _consumer = self._ensure_consumer()
-        messages = _consumer.consume(num_messages=50000,timeout=timeout)
+        messages = _consumer.consume(num_messages=500000,timeout=timeout)
         length = len(messages)
         self.log.info(f'the messages are of length {length}.')
         if messages:
@@ -501,6 +501,7 @@ class ProducerThread(QueueServiceThread, BrokerCredentialsMixin):
 
     async def on_thread_stop(self) -> None:
         if self._producer is not None:
+            self.log.info('Daanyal, we hit the flush. Start checking if messages are still coming through!')
             self._producer.flush()
 
     def produce(self, topic: str, key: bytes, value: bytes, partition: int,
@@ -517,7 +518,7 @@ class ProducerThread(QueueServiceThread, BrokerCredentialsMixin):
             self._producer.produce(
                 topic, key, value, on_delivery=on_delivery,
             )
-        self._producer.flush()
+        notify(self._flush_soon)
 
     @Service.task
     async def _background_flush(self) -> None:
