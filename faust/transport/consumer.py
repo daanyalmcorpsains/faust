@@ -1042,6 +1042,8 @@ class Consumer(Service, ConsumerT):
         num_since_yield = 0
         sleep = asyncio.sleep
         msg_err = ''
+        results_dict = {}
+        first = True
 
         try:
             while not (consumer_should_stop() or fetcher_should_stop()):
@@ -1050,7 +1052,12 @@ class Consumer(Service, ConsumerT):
                 self.log.info('Daanyal the flag is set.')
                 ait = cast(AsyncIterator, getmany(timeout=1.0))
                 self.log.info(f'Daanyal the ait is set. last message {msg_err}.')
-
+                copy = dict(ait)
+                results_dict.update(copy)
+                if first and not ait:
+                    self.log.info(f'The length of complete results is {len(results_dict)}.')
+                    first = False
+                    
                 # Sleeping because sometimes getmany is called in a loop
                 # never releasing to the event loop
                 await self.sleep(0)
