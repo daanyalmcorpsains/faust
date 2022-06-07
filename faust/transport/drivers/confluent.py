@@ -501,7 +501,6 @@ class ProducerThread(QueueServiceThread, BrokerCredentialsMixin):
 
     async def on_thread_stop(self) -> None:
         if self._producer is not None:
-            self.log.info('Daanyal, we hit the flush. Start checking if messages are still coming through!')
             self._producer.flush()
 
     def produce(self, topic: str, key: bytes, value: bytes, partition: int,
@@ -518,7 +517,7 @@ class ProducerThread(QueueServiceThread, BrokerCredentialsMixin):
             self._producer.produce(
                 topic, key, value, on_delivery=on_delivery,
             )
-        notify(self._flush_soon)
+        self._producer.flush()
 
     @Service.task
     async def _background_flush(self) -> None:
