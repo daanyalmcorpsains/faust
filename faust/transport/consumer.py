@@ -1050,9 +1050,10 @@ class Consumer(Service, ConsumerT):
                 self.log.info('Daanyal the flag is about to be set.')
                 set_flag(flag_consumer_fetching)
                 self.log.info('Daanyal the flag is set.')
-                ait = cast(AsyncIterator, getmany(timeout=1.0))
+                results = getmany(timeout=1.0)
+                ait = cast(AsyncIterator, results)
                 self.log.info(f'Daanyal the ait is set. last message {msg_err}.')
-                if first and not ait:
+                if first and not results:
                     self.log.info(f'The length of complete results is {len(results_dict)}.')
                     first = False
                     
