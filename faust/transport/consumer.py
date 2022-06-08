@@ -1051,7 +1051,7 @@ class Consumer(Service, ConsumerT):
                     
                 # Sleeping because sometimes getmany is called in a loop
                 # never releasing to the event loop
-                await self.sleep(0.01)
+                await self.sleep(0)
                 if not self.should_stop:
                     async for tp, message in ait:
                         self.log.info(f'the message currently being read is {message} partition is {tp}')
