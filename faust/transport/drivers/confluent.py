@@ -514,12 +514,10 @@ class ProducerThread(QueueServiceThread, BrokerCredentialsMixin):
         if self._producer is None:
             raise RuntimeError('Producer not started')
         if partition is not None:
-            self.log.info(f'we attempt to actually send to the topic with client id {self.app.conf.broker_client_id} and partition {partition}.')
             self._producer.produce(
                 topic, key, value, partition, on_delivery=on_delivery,
             )
         else:
-            self.log.info(f'we attempt to actually send to the topic with client id {self.app.conf.broker_client_id} and no partition.')
             self._producer.produce(
                 topic, key, value, on_delivery=on_delivery,
             )
