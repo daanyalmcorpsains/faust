@@ -518,7 +518,7 @@ class ProducerThread(QueueServiceThread, BrokerCredentialsMixin):
             self._producer.produce(
                 topic, key, value, on_delivery=on_delivery,
             )
-        notify(self._flush_soon)
+        self._producer.flush()
 
     @Service.task
     async def _background_flush(self) -> None:
