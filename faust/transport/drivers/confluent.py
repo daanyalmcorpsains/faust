@@ -413,7 +413,12 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
                       timeout: float) -> RecordMap:
         # Implementation for the Fetcher service.
         _consumer = self._ensure_consumer()
-        messages = _consumer.consume(num_messages=500000,timeout=timeout)
+        messages = await self.call_thread(
+            _consumer.consume,
+            num_messages=10000,
+            timeout=timeout,
+        )        
+        
         length = len(messages)
         self.log.info(f'the messages are of length {length}.')
         if messages:
