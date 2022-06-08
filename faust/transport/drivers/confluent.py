@@ -618,7 +618,6 @@ class Producer(base.Producer):
                    transactional_id: str = None) -> Awaitable[RecordMetadata]:
         """Send message for future delivery."""
         fut = ProducerProduceFuture(loop=self.loop)
-        logger.info(f'about to produce message with key {key} and value {value}.')
         self._quick_produce(
             topic, value, key, partition,
             on_delivery=fut.set_from_on_delivery,
