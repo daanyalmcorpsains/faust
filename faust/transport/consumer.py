@@ -1215,7 +1215,7 @@ class ConsumerThread(QueueServiceThread):
             self, revoked: Set[TP]) -> None:
         """Call on rebalance when partitions are being revoked."""
         await self.consumer.threadsafe_partitions_revoked(
-            self.parent_loop, revoked)
+            self.thread_loop, revoked)
 
     async def on_partitions_assigned(
             self, assigned: Set[TP]) -> None:
