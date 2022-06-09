@@ -285,6 +285,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
             self._ensure_consumer().subscribe,
             topics=list(topics),
             on_assign=self._on_assign,
+            on_revoke=self._on_revoke
         )
 
         while not self._assigned:
@@ -301,7 +302,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
     def _on_revoke(self,
                    consumer: _Consumer,
                    revoked: List[_TopicPartition]) -> None:
-        
+        self.log.info("we hit the revoke.")
         revoke_task = self.thread_loop.create_task(self.on_partitions_revoked({TP(tp.topic, tp.partition) for tp in revoked}))
         done = False 
         while not done: 
