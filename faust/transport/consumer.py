@@ -1068,9 +1068,7 @@ class Consumer(Service, ConsumerT):
                                 acks_enabled = acks_enabled_for(message.topic)
                                 if acks_enabled:
                                     self._add_gap(tp, r_offset + 1, offset)
-                                    self.log.info('this message passes add_gap.')
                             if commit_every is not None:
-                                self.log.info(f'commit every is {commit_every}.')
                                 if self._n_acked >= commit_every:
                                     self._n_acked = 0
                                     await self.commit()
