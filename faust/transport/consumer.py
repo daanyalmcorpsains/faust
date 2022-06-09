@@ -1062,24 +1062,24 @@ class Consumer(Service, ConsumerT):
 
                         offset = message.offset
                         r_offset = get_read_offset(tp)
-#                         if r_offset is None or offset > r_offset:
-                        gap = offset - (r_offset or 0)
+                        if r_offset is None or offset > r_offset:
+                            gap = offset - (r_offset or 0)
                             # We have a gap in income messages
-                        if gap > 1 and r_offset:
-                            acks_enabled = acks_enabled_for(message.topic)
-                            if acks_enabled:
-                                self._add_gap(tp, r_offset + 1, offset)
-                                self.log.info('this message passes add_gap.')
-                        if commit_every is not None:
-                            self.log.info(f'commit every is {commit_every}.')
-                            if self._n_acked >= commit_every:
-                                self._n_acked = 0
-                                await self.commit()
-                        await callback(message)
-                        set_read_offset(tp, offset)
-#                         else:
-#                             self.log.info('DROPPED MESSAGE ROFF %r: k=%r v=%r',
-#                                          offset, message.key, message.value)
+                            if gap > 1 and r_offset:
+                                acks_enabled = acks_enabled_for(message.topic)
+                                if acks_enabled:
+                                    self._add_gap(tp, r_offset + 1, offset)
+                                    self.log.info('this message passes add_gap.')
+                            if commit_every is not None:
+                                self.log.info(f'commit every is {commit_every}.')
+                                if self._n_acked >= commit_every:
+                                    self._n_acked = 0
+                                    await self.commit()
+                            await callback(message)
+                            set_read_offset(tp, offset)
+                        else:
+                            self.log.info('DROPPED MESSAGE ROFF %r: k=%r v=%r',
+                                         offset, message.key, message.value)
                     unset_flag(flag_consumer_fetching)
 
 
