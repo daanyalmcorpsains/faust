@@ -307,7 +307,8 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         done = False 
         while not done: 
             time.sleep(1) 
-            done = revoke_task.done()           
+            done = revoke_task.done() 
+            self.log.info(f'the status of done is {done}.')
 
     async def seek_to_committed(self) -> Mapping[TP, int]:
         return await self.call_thread(self._seek_to_committed)
