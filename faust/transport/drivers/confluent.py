@@ -432,6 +432,13 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         for message in messages:
             tp = TP(message.topic(), message.partition())
             records[tp].append(message)
+            
+        total_rec_length = 0
+        
+        for tp in list(records.keys()):
+            total_rec_length += len(records[tp])
+        self.log.info(f'just confirming the dictionary is of length {total_rec_length}.')
+        
         return records
 
     async def create_topic(self,
