@@ -301,9 +301,12 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
     def _on_revoke(self,
                    consumer: _Consumer,
                    revoked: List[_TopicPartition]) -> None:
-        self.thread_loop.run_until_complete(
-            self.on_partitions_revoked(
-                {TP(tp.topic, tp.partition) for tp in revoked}))
+        
+        revoke_task = self.thread_loop.create_task(self.on_partitions_revoked({TP(tp.topic, tp.partition) for tp in revoked}))
+        done = False 
+        while not done: 
+            time.sleep(1) 
+            done = task.Done()           
 
     async def seek_to_committed(self) -> Mapping[TP, int]:
         return await self.call_thread(self._seek_to_committed)
