@@ -1078,7 +1078,7 @@ class Consumer(Service, ConsumerT):
                             await callback(message)
                             set_read_offset(tp, offset)
                         else:
-                            self.log.dev('DROPPED MESSAGE ROFF %r: k=%r v=%r',
+                            self.log.info('DROPPED MESSAGE ROFF %r: k=%r v=%r',
                                          offset, message.key, message.value)
                     unset_flag(flag_consumer_fetching)
 
