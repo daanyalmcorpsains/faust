@@ -1051,7 +1051,7 @@ class Consumer(Service, ConsumerT):
                     
                 # Sleeping because sometimes getmany is called in a loop
                 # never releasing to the event loop
-                await sleep(0)
+                await self.sleep(0)
                 if not self.should_stop:
                     async for tp, message in ait:
                         self.log.info(f'the topic partiion is {tp} and the offset is {message.offset}')
@@ -1075,7 +1075,9 @@ class Consumer(Service, ConsumerT):
                                 if self._n_acked >= commit_every:
                                     self._n_acked = 0
                                     await self.commit()
-                            await callback(message)
+                            await self.wait_first(
+                                callback(message), self.suspend_flow.wait()
+                            )
                             set_read_offset(tp, offset)
                         else:
                             self.log.info('DROPPED MESSAGE ROFF %r: k=%r v=%r',
