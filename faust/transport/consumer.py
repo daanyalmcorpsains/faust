@@ -1051,9 +1051,9 @@ class Consumer(Service, ConsumerT):
                     
                 # Sleeping because sometimes getmany is called in a loop
                 # never releasing to the event loop
-                await sleep(0)
+                await self.sleep(0)
 #                 if not self.should_stop:
-                    async for tp, message in ait:
+                async for tp, message in ait:
                         self.log.info(f'the topic partiion is {tp} and the offset is {message.offset}')
                         num_since_yield += 1
                         if num_since_yield > yield_every:
@@ -1080,7 +1080,7 @@ class Consumer(Service, ConsumerT):
                         else:
                             self.log.info('DROPPED MESSAGE ROFF %r: k=%r v=%r',
                                          offset, message.key, message.value)
-                    unset_flag(flag_consumer_fetching)
+                unset_flag(flag_consumer_fetching)
 
 
         except self.consumer_stopped_errors:
