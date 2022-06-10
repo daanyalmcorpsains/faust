@@ -1038,13 +1038,13 @@ class Consumer(Service, ConsumerT):
         commit_every = self._commit_every
         acks_enabled_for = self.app.topics.acks_enabled_for
 
-        yield_every = 100
+        yield_every = 200000
         num_since_yield = 0
         sleep = asyncio.sleep
         msg_err = ''
 
         try:
-            while not (consumer_should_stop() or fetcher_should_stop()):
+#             while not (consumer_should_stop() or fetcher_should_stop()):
                 set_flag(flag_consumer_fetching)
                 results = getmany(timeout=2.0)
                 ait = cast(AsyncIterator, results)
@@ -1052,7 +1052,7 @@ class Consumer(Service, ConsumerT):
                 # Sleeping because sometimes getmany is called in a loop
                 # never releasing to the event loop
                 await sleep(0)
-                if not self.should_stop:
+#                 if not self.should_stop:
                     async for tp, message in ait:
                         self.log.info(f'the topic partiion is {tp} and the offset is {message.offset}')
                         num_since_yield += 1
