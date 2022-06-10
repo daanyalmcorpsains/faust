@@ -70,7 +70,7 @@ from typing import (
     cast,
 )
 from weakref import WeakSet
-
+from asyncio import Event
 from mode import Service, ServiceT, flight_recorder, get_logger
 from mode.threads import MethodQueue, QueueServiceThread
 from mode.utils.futures import notify
@@ -431,6 +431,7 @@ class Consumer(Service, ConsumerT):
         self.commit_livelock_soft_timeout = (
             commit_livelock_soft_timeout or
             self.app.conf.broker_commit_livelock_soft_timeout)
+        self.suspend_flow = Event()
         self._gap = defaultdict(list)
         self._acked = defaultdict(list)
         self._acked_index = defaultdict(set)
