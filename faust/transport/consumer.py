@@ -1075,7 +1075,7 @@ class Consumer(Service, ConsumerT):
                                 if self._n_acked >= commit_every:
                                     self._n_acked = 0
                                     await self.commit()
-                            await callback(message)
+                            await asyncio.wait_for(callback(message), 20)                            
                             set_read_offset(tp, offset)
                         else:
                             self.log.info('DROPPED MESSAGE ROFF %r: k=%r v=%r',
