@@ -1069,13 +1069,15 @@ class Consumer(Service, ConsumerT):
                                 acks_enabled = acks_enabled_for(message.topic)
                                 if acks_enabled:
                                     self._add_gap(tp, r_offset + 1, offset)
-                                    self.log.info('this message passes add_gap.')
                             if commit_every is not None:
-                                self.log.info(f'commit every is {commit_every}.')
                                 if self._n_acked >= commit_every:
                                     self._n_acked = 0
+                                    self.log.info(f'this has hit commit.')
                                     await self.commit()
-                            await callback(message)                          
+                                    self.log.info(f'commit has passed.')
+
+                            await callback(message)
+                            self.log.info(f'callback has passed for message {message} has passed.') 
                             set_read_offset(tp, offset)
                         else:
                             self.log.info('DROPPED MESSAGE ROFF %r: k=%r v=%r',
