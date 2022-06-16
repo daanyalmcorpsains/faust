@@ -1054,7 +1054,7 @@ class Consumer(Service, ConsumerT):
                 await self.sleep(0)
                 if not self.should_stop:
                     async for tp, message in ait:
-                        self.log.info(f'the topic partiion is {tp} and the offset is {message.offset}')
+                        self.log.info(f'the topic partition is {tp} and the message is {message}')
                         num_since_yield += 1
                         if num_since_yield > yield_every:
                             await sleep(0)
