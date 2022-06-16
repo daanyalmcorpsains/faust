@@ -1048,7 +1048,8 @@ class Consumer(Service, ConsumerT):
                 set_flag(flag_consumer_fetching)
                 
                 results = await getmany(timeout=1.0)
-                ait = cast(AsyncIterator, results)
+                dict_results = dict(results)
+                ait = AsyncIterator(dict_results)
                     
                 # Sleeping because sometimes getmany is called in a loop
                 # never releasing to the event loop
