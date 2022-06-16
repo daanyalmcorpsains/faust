@@ -417,10 +417,20 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
                       active_partitions: Optional[Set[TP]],
                       timeout: float) -> RecordMap:
         # Implementation for the Fetcher service.
+
+        return await self.call_thread(self.get_dict_messages,
+                                      messages=messages,
+                                      timeout=timeout)
+        
+            
+            
+    async def get_dict_messages(self, messages, timeout) -> RecordMap:
+        
         _consumer = self._ensure_consumer()
+        
         messages = await self.call_thread(
             _consumer.consume,
-            num_messages=1,
+            num_messages=500000,
             timeout=timeout,
         )        
         
@@ -428,11 +438,6 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         self.log.info(f'the messages are of length {length}.')
         if messages:
             self.log.info(f'the first message of this batch is {messages[0].value()}. The last message of this batch is {messages[-1].value()}')
-        return await self.get_def_dict(messages)
-        
-            
-            
-    async def get_def_dict(self, messages) -> RecordMap:
         records: RecordMap = defaultdict(list)
         for message in messages:
             tp = TP(message.topic(), message.partition())
