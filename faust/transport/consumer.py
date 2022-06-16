@@ -1044,7 +1044,7 @@ class Consumer(Service, ConsumerT):
         msg_err = ''
 
         try:
-            while not (consumer_should_stop() or fetcher_should_stop()):
+#             while not (consumer_should_stop() or fetcher_should_stop()):
                 set_flag(flag_consumer_fetching)
                 ait = cast(AsyncIterator, getmany(timeout=1.0))
                     
@@ -1082,6 +1082,7 @@ class Consumer(Service, ConsumerT):
                             self.log.info('DROPPED MESSAGE ROFF %r: k=%r v=%r',
                                          offset, message.key, message.value)
                     unset_flag(flag_consumer_fetching)
+                    self.log.info(f'the consumer fetching flag has been unset, the loop has exited successfully.')
 
 
         except self.consumer_stopped_errors:
