@@ -53,6 +53,7 @@ from time import monotonic
 from typing import (
     Any,
     AsyncIterator,
+    AsyncGenerator,
     Awaitable,
     ClassVar,
     Dict,
@@ -1055,7 +1056,7 @@ class Consumer(Service, ConsumerT):
         try:
             while not (consumer_should_stop() or fetcher_should_stop()):
                 set_flag(flag_consumer_fetching)
-                ait = cast(AsyncIterator, getmany(timeout=1.0))
+                ait = cast(AsyncGenerator, getmany(timeout=1.0))
                     
                 # Sleeping because sometimes getmany is called in a loop
                 # never releasing to the event loop
@@ -1086,7 +1087,6 @@ class Consumer(Service, ConsumerT):
                                         self.log.info(f'commit has passed.')
 
                                 await callback(message)
-                                await sleep(2)
                                 self.log.info(f'callback has passed for message {message} has passed.') 
                                 set_read_offset(tp, offset)
                             else:
