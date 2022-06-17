@@ -419,11 +419,12 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         # Implementation for the Fetcher service.
 
         return await self.call_thread(self.get_dict_messages,
+                                      messages=messages,
                                       timeout=timeout)
         
             
             
-    async def get_dict_messages(self, timeout) -> RecordMap:
+    async def get_dict_messages(self, messages, timeout) -> RecordMap:
         
         _consumer = self._ensure_consumer()
         
