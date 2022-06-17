@@ -1076,7 +1076,7 @@ class Consumer(Service, ConsumerT):
                                     self.log.info(f'commit has passed.')
 
                             await callback(message)
-                            await sleep(0)
+                            await sleep(2)
                             self.log.info(f'callback has passed for message {message} has passed.') 
                             set_read_offset(tp, offset)
                         else:
