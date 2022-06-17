@@ -427,7 +427,11 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         
         _consumer = self._ensure_consumer()
         
-        messages = _consumer.consume(num_messages=500000, timeout=timeout)        
+        messages = await self.call_thread(
+            _consumer.consume,
+            num_messages=500000,
+            timeout=timeout,
+        )        
         
         length = len(messages)
         self.log.info(f'the messages are of length {length}.')
