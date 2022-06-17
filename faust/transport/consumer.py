@@ -1053,32 +1053,32 @@ class Consumer(Service, ConsumerT):
                 await self.sleep(0)
                 if not self.should_stop:
                     async for tp, message in ait:
-                        self.log.info(f'the topic partition is {tp} and the message is {message}')
-                        num_since_yield += 1
-                        if num_since_yield > yield_every:
-                            await sleep(0)
-                            num_since_yield = 0
+#                         self.log.info(f'the topic partition is {tp} and the message is {message}')
+#                         num_since_yield += 1
+#                         if num_since_yield > yield_every:
+#                             await sleep(0)
+#                             num_since_yield = 0
 
-                        offset = message.offset
-                        r_offset = get_read_offset(tp)
-                        if r_offset is None or offset > r_offset:
-                            gap = offset - (r_offset or 0)
-                            # We have a gap in income messages
-                            if gap > 1 and r_offset:
-                                acks_enabled = acks_enabled_for(message.topic)
-                                if acks_enabled:
-                                    self._add_gap(tp, r_offset + 1, offset)
-                            if commit_every is not None:
-                                if self._n_acked >= commit_every:
-                                    self._n_acked = 0
-                                    self.log.info(f'this has hit commit.')
-                                    await self.commit()
-                                    self.log.info(f'commit has passed.')
+#                         offset = message.offset
+#                         r_offset = get_read_offset(tp)
+#                         if r_offset is None or offset > r_offset:
+#                             gap = offset - (r_offset or 0)
+#                             # We have a gap in income messages
+#                             if gap > 1 and r_offset:
+#                                 acks_enabled = acks_enabled_for(message.topic)
+#                                 if acks_enabled:
+#                                     self._add_gap(tp, r_offset + 1, offset)
+#                             if commit_every is not None:
+#                                 if self._n_acked >= commit_every:
+#                                     self._n_acked = 0
+#                                     self.log.info(f'this has hit commit.')
+#                                     await self.commit()
+#                                     self.log.info(f'commit has passed.')
 
-                            await callback(message)
-                            self.log.info(f'callback has passed for message {message} has passed.') 
-                            set_read_offset(tp, offset)
-                        else:
+#                             await callback(message)
+#                             self.log.info(f'callback has passed for message {message} has passed.') 
+#                             set_read_offset(tp, offset)
+#                         else:
                             self.log.info('DROPPED MESSAGE ROFF %r: k=%r v=%r',
                                          offset, message.key, message.value)
                     unset_flag(flag_consumer_fetching)
