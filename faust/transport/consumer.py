@@ -1052,7 +1052,6 @@ class Consumer(Service, ConsumerT):
                 # never releasing to the event loop
                 await self.sleep(0)
                 if not self.should_stop:
-                    x = 0
                     async for tp, message in ait:
 #                         self.log.info(f'the topic partition is {tp} and the message is {message}')
 #                         num_since_yield += 1
@@ -1080,8 +1079,8 @@ class Consumer(Service, ConsumerT):
 #                             self.log.info(f'callback has passed for message {message} has passed.') 
 #                             set_read_offset(tp, offset)
 #                         else:
-                            x+=1
-                            self.log.info(f'iteration {x}')
+                            self.log.info('DROPPED MESSAGE ROFF %r: k=%r v=%r',
+                                         offset, message.key, message.value)
                     unset_flag(flag_consumer_fetching)
                     self.log.info(f'the consumer fetching flag has been unset, the loop has exited successfully.')
 
