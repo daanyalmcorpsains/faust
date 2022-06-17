@@ -420,7 +420,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         _consumer = self._ensure_consumer()
         messages = await self.call_thread(
             _consumer.consume,
-            num_messages=1,
+            num_messages=500000,
             timeout=timeout,
         )        
         
@@ -428,11 +428,6 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         self.log.info(f'the messages are of length {length}.')
         if messages:
             self.log.info(f'the first message of this batch is {messages[0].value()}. The last message of this batch is {messages[-1].value()}')
-        return await self.get_def_dict(messages)
-        
-            
-            
-    async def get_def_dict(self, messages) -> RecordMap:
         records: RecordMap = defaultdict(list)
         for message in messages:
             tp = TP(message.topic(), message.partition())
@@ -443,7 +438,6 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         for tp in list(records.keys()):
             total_rec_length += len(records[tp])
         self.log.info(f'just confirming the dictionary is of length {total_rec_length}.')
-        
         return records
 
     async def create_topic(self,
