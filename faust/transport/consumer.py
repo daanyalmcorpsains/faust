@@ -1061,7 +1061,7 @@ class Consumer(Service, ConsumerT):
                         self.log.info(f'the topic partition is {tp} and the message is {message}')
                         num_since_yield += 1
                         if num_since_yield > yield_every:
-                            await sleep(0)
+                            await sleep(3)
                             num_since_yield = 0
 
                         offset = message.offset
@@ -1081,7 +1081,6 @@ class Consumer(Service, ConsumerT):
                                     self.log.info(f'commit has passed.')
 
                             await callback(message)
-                            await sleep(2)
                             self.log.info(f'callback has passed for message {message} has passed.') 
                             set_read_offset(tp, offset)
                         else:
