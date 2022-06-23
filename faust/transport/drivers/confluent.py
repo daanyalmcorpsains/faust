@@ -436,17 +436,19 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         self.log.info(f'the messages are of length {length}.')
         if messages:
             self.log.info(f'the first message of this batch is {messages[0].value()}. The last message of this batch is {messages[-1].value()}')
-        records: RecordMap = defaultdict(list)
-        for message in messages:
-            tp = TP(message.topic(), message.partition())
-            records[tp].append(message)
-            
-        total_rec_length = 0
-        
-        for tp in list(records.keys()):
-            total_rec_length += len(records[tp])
-        self.log.info(f'just confirming the dictionary is of length {total_rec_length}.')
-        return records
+            records: RecordMap = defaultdict(list)
+            for message in messages:
+                tp = TP(message.topic(), message.partition())
+                records[tp].append(message)
+
+            total_rec_length = 0
+
+            for tp in list(records.keys()):
+                total_rec_length += len(records[tp])
+            self.log.info(f'just confirming the dictionary is of length {total_rec_length}.')
+            return records
+        else: 
+            await asyncio.sleep(60)
     
     async def poll(self):
         _consumer = self._ensure_consumer()
