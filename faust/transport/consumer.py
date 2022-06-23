@@ -605,6 +605,11 @@ class Consumer(Service, ConsumerT):
                        active_partitions: Optional[Set[TP]],
                        timeout: float) -> RecordMap:
         ...
+        
+    @abc.abstractmethod    
+    async def _poll(self):
+        ...
+        
 
     async def getmany(self,
                       timeout: float) -> AsyncIterator[Tuple[TP, Message]]:
@@ -1056,6 +1061,7 @@ class Consumer(Service, ConsumerT):
                         self.log.info(f'the topic partition is {tp} and the message is {message}')
                         num_since_yield += 1
                         if num_since_yield > yield_every:
+                            await self._poll()
                             await sleep(0)
                             num_since_yield = 0
 
@@ -1292,6 +1298,9 @@ class ThreadDelegateConsumer(Consumer):
                        active_partitions: Optional[Set[TP]],
                        timeout: float) -> RecordMap:
         return await self._thread.getmany(active_partitions, timeout)
+    
+    async def _poll(self):
+        return await self._thread.poll()
 
     async def subscribe(self, topics: Iterable[str]) -> None:
         """Reset subscription (requires rebalance)."""

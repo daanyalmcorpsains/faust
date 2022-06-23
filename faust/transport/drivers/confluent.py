@@ -308,8 +308,8 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         self.log.info(f'waiting for revoke callback to complete.')
            
          
-    def _revoke_done(self) -> None:
-        self.log.info(f'revoke callback completed.')
+    def _revoke_done(self, context) -> None:
+        self.log.info(f'revoke callback completed: {context}')
 
     async def seek_to_committed(self) -> Mapping[TP, int]:
         return await self.call_thread(self._seek_to_committed)
@@ -440,6 +440,11 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
             total_rec_length += len(records[tp])
         self.log.info(f'just confirming the dictionary is of length {total_rec_length}.')
         return records
+    
+    async def poll(self):
+        _consumer = self._ensure_consumer()
+        await self.call_thread(_consumer.poll)
+        
 
     async def create_topic(self,
                            topic: str,
