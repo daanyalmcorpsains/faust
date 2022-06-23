@@ -1292,6 +1292,9 @@ class ThreadDelegateConsumer(Consumer):
                        active_partitions: Optional[Set[TP]],
                        timeout: float) -> RecordMap:
         return await self._thread.getmany(active_partitions, timeout)
+    
+    async def _poll(self):
+        return await self._thread.poll()
 
     async def subscribe(self, topics: Iterable[str]) -> None:
         """Reset subscription (requires rebalance)."""
