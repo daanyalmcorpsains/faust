@@ -1061,6 +1061,7 @@ class Consumer(Service, ConsumerT):
                         self.log.info(f'the topic partition is {tp} and the message is {message}')
                         num_since_yield += 1
                         if num_since_yield > yield_every:
+                            await self._poll()
                             await sleep(0)
                             num_since_yield = 0
 
