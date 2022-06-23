@@ -309,15 +309,21 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         self.log.info(f'waiting for revoke callback to complete.')
            
          
-    async def _revoke_done(self, context) -> None:
+    def _revoke_done(self, context) -> None:
         self.log.info(f'revoke callback completed: {context}')
         while not self._assigned:
             self.log.info('Still waiting for assignment...')
             self._ensure_consumer().poll(timeout=1)
         self._assigned = False    
-        await self.confluentcallbacks.on_partitions_assigned(assigned=self.topics)
+        assign_task = self.thread_loop.create_task(self.confluentcallbacks.on_partitions_assigned(assigned=self.topics))
+        assign_task.add_done_callback(self._assign_done)
+        self.log.info('waiting for assign callback to complete')
     
+    
+    def _assign_done(self, context):
+        self.log.info(f'assign callback completed: {context}')
 
+        
     async def seek_to_committed(self) -> Mapping[TP, int]:
         return await self.call_thread(self._seek_to_committed)
 
