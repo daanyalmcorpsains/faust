@@ -308,8 +308,8 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         self.log.info(f'waiting for revoke callback to complete.')
            
          
-    def _revoke_done(self) -> None:
-        self.log.info(f'revoke callback completed.')
+    def _revoke_done(self, context) -> None:
+        self.log.info(f'revoke callback completed: {context}')
 
     async def seek_to_committed(self) -> Mapping[TP, int]:
         return await self.call_thread(self._seek_to_committed)
