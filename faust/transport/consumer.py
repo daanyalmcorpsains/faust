@@ -605,6 +605,11 @@ class Consumer(Service, ConsumerT):
                        active_partitions: Optional[Set[TP]],
                        timeout: float) -> RecordMap:
         ...
+        
+    @abc.abstractmethod    
+    async def _poll(self):
+        ...
+        
 
     async def getmany(self,
                       timeout: float) -> AsyncIterator[Tuple[TP, Message]]:
