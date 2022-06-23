@@ -1043,7 +1043,7 @@ class Consumer(Service, ConsumerT):
         commit_every = self._commit_every
         acks_enabled_for = self.app.topics.acks_enabled_for
 
-        yield_every = 100
+        yield_every = 1000
         num_since_yield = 0
         sleep = asyncio.sleep
         msg_err = ''
@@ -1061,7 +1061,8 @@ class Consumer(Service, ConsumerT):
                         self.log.info(f'the topic partition is {tp} and the message is {message}')
                         num_since_yield += 1
                         if num_since_yield > yield_every:
-                            await sleep(3)
+                            await sleep(10)
+                            await self._poll()
                             num_since_yield = 0
 
                         offset = message.offset
