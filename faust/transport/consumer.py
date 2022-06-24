@@ -1227,10 +1227,15 @@ class ConsumerThread(QueueServiceThread):
             self.thread_loop, revoked)
 
     async def on_partitions_assigned(
-            self, assigned: Set[TP]) -> None:
+            self, assigned: Set[TP], reassigned) -> None:
         """Call on rebalance when partitions are being assigned."""
-        await self.consumer.threadsafe_partitions_assigned(
-            self.parent_loop, assigned)
+        if not reassigned:
+            await self.consumer.threadsafe_partitions_assigned(
+                self.parent_loop, assigned)
+        else:
+            await self.consumer.threadsafe_partitions_assigned(
+                self.thread_loop, assigned)            
+            
 
     @abc.abstractmethod
     def key_partition(self,
