@@ -149,10 +149,10 @@ class ConfluentCallbacks:
             {TP(tp.topic, tp.partition) for tp in revoked})
 
     async def on_partitions_assigned(
-                                     self, assigned: Iterable[_TopicPartition]) -> None:
+                                     self, assigned: Iterable[_TopicPartition], reassign=False) -> None:
         self.stop_poll = True
         await self._thread.on_partitions_assigned(
-            {TP(tp.topic, tp.partition) for tp in assigned})
+            {TP(tp.topic, tp.partition) for tp in assigned}, reassign)
 
 
 class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
@@ -315,7 +315,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
             self.log.info('Still waiting for assignment...')
             self._ensure_consumer().poll(timeout=1)
         self._assigned = False    
-        assign_task = self.thread_loop.create_task(self.confluentcallbacks.on_partitions_assigned(assigned=self.topics))
+        assign_task = self.thread_loop.create_task(self.confluentcallbacks.on_partitions_assigned(assigned=self.topics, reassign=True))
         assign_task.add_done_callback(self._assign_done)
         self.log.info('waiting for assign callback to complete')
     
