@@ -431,16 +431,18 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
                       active_partitions: Optional[Set[TP]],
                       timeout: float) -> RecordMap:
         # Implementation for the Fetcher service.
+        await asyncio.sleep(20)
         _consumer = self._ensure_consumer()
         messages = await self.call_thread(
             _consumer.consume,
-            num_messages=500,
+            num_messages=3000,
             timeout=timeout,
         )        
         
         length = len(messages)
         self.log.info(f'the messages are of length {length}.')
         if messages:
+            await self.commit()
             self.log.info(f'the first message of this batch is {messages[0].value()}. The last message of this batch is {messages[-1].value()}')
             records: RecordMap = defaultdict(list)
             for message in messages:
