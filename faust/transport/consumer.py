@@ -1058,7 +1058,6 @@ class Consumer(Service, ConsumerT):
                 await self.sleep(0)
                 if not self.should_stop:
                     async for tp, message in ait:
-                        self.log.info(f'the topic partition is {tp} and the message is {message}')
                         num_since_yield += 1
                         if num_since_yield > yield_every:
                             await sleep(10)
@@ -1082,13 +1081,11 @@ class Consumer(Service, ConsumerT):
                                     self.log.info(f'commit has passed.')
 
                             await callback(message)
-                            self.log.info(f'callback has passed for message {message} has passed.') 
                             set_read_offset(tp, offset)
                         else:
                             self.log.info('DROPPED MESSAGE ROFF %r: k=%r v=%r',
                                          offset, message.key, message.value)
                     unset_flag(flag_consumer_fetching)
-                    self.log.info(f'the consumer fetching flag has been unset, the loop has exited successfully.')
 
 
         except self.consumer_stopped_errors:
