@@ -939,10 +939,8 @@ class Consumer(Service, ConsumerT):
         committable_offsets: Dict[TP, int] = {}
         revoked: Dict[TP, int] = {}
         for tp, offset in offsets.items():
-            if tp in assignment:
-                committable_offsets[tp] = offset
-            else:
-                revoked[tp] = offset
+            committable_offsets[tp] = offset
+
         if revoked:
             self.log.info(
                 'Discarded commit for revoked partitions that '
