@@ -1061,7 +1061,6 @@ class Consumer(Service, ConsumerT):
                         num_since_yield += 1
                         if num_since_yield > yield_every:
                             await sleep(10)
-                            await self._poll()
                             num_since_yield = 0
 
                         offset = message.offset
@@ -1079,7 +1078,7 @@ class Consumer(Service, ConsumerT):
                                     self.log.info(f'this has hit commit.')
                                     await self.commit()
                                     self.log.info(f'commit has passed.')
-
+                            await self._poll()
                             await callback(message)
                             set_read_offset(tp, offset)
                         else:
