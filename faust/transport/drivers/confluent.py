@@ -297,13 +297,14 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
     def _on_assign(self,
                    consumer: _Consumer,
                    assigned: List[_TopicPartition]) -> None:
+        self.log.info(f'these are the partitions that have been assigned {assigned}.')
         self._assigned = True
         self.topics = assigned
 
     def _on_revoke(self,
                    consumer: _Consumer,
                    revoked: List[_TopicPartition]) -> None:
-        self.log.info("we hit the revoke.")
+        self.log.info(f'we hit the revoke. The following partitions have been revoked {revoked}.')
         revoke_task = self.thread_loop.create_task(self.on_partitions_revoked({TP(tp.topic, tp.partition) for tp in revoked}))
         revoke_task.add_done_callback(self._revoke_done) 
         self.log.info(f'waiting for revoke callback to complete.')
