@@ -1054,12 +1054,12 @@ class Consumer(Service, ConsumerT):
                 # Sleeping because sometimes getmany is called in a loop
                 # never releasing to the event loop
                 await self.sleep(0)
-                await sleep(3)
+                await sleep(6)
                 if not self.should_stop:
                     async for tp, message in ait:
                         num_since_yield += 1
                         if num_since_yield > yield_every:
-                            await sleep(10)
+                            await sleep(20)
                             num_since_yield = 0
 
                         offset = message.offset
