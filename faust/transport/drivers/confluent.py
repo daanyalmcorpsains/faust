@@ -437,7 +437,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         _consumer = self._ensure_consumer()
         messages = await self.call_thread(
             _consumer.consume,
-            num_messages=30000,
+            num_messages=1001,
             timeout=timeout,
         )        
         
@@ -560,8 +560,10 @@ class ProducerThread(QueueServiceThread, BrokerCredentialsMixin):
                 self._producer.produce(
                     topic, key, value, on_delivery=on_delivery,
                 )
-            except Exception:
+            except Exception as e:
+                self.log.info(f'it looks like the queue buffer is full: {e}')
                 self._producer.flush()
+                time.sleep(20)
                 self._producer.produce(
                     topic, key, value, on_delivery=on_delivery,
                 )
