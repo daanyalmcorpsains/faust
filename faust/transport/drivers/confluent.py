@@ -563,7 +563,6 @@ class ProducerThread(QueueServiceThread, BrokerCredentialsMixin):
             except Exception as e:
                 self.log.info(f'it looks like the queue buffer is full: {e}')
                 self._producer.flush()
-                time.sleep(20)
                 self._producer.produce(
                     topic, key, value, on_delivery=on_delivery,
                 )
