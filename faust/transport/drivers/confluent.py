@@ -556,9 +556,17 @@ class ProducerThread(QueueServiceThread, BrokerCredentialsMixin):
                 topic, key, value, partition, on_delivery=on_delivery,
             )
         else:
-            self._producer.produce(
-                topic, key, value, on_delivery=on_delivery,
-            )
+            try:
+                self._producer.produce(
+                    topic, key, value, on_delivery=on_delivery,
+                )
+            except Exception:
+                self._producer.flush()
+                self._producer.produce(
+                    topic, key, value, on_delivery=on_delivery,
+                )
+            finally:
+                pass
 
     @Service.task
     async def _background_flush(self) -> None:
