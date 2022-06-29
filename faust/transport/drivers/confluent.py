@@ -432,6 +432,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
                       active_partitions: Optional[Set[TP]],
                       timeout: float) -> RecordMap:
         # Implementation for the Fetcher service.
+        await self.poll()
         await asyncio.sleep(5)
         _consumer = self._ensure_consumer()
         messages = await self.call_thread(
