@@ -1041,7 +1041,7 @@ class Consumer(Service, ConsumerT):
         commit_every = self._commit_every
         acks_enabled_for = self.app.topics.acks_enabled_for
 
-        yield_every = 1000
+        yield_every = 500
         num_since_yield = 0
         sleep = asyncio.sleep
         msg_err = ''
@@ -1054,7 +1054,7 @@ class Consumer(Service, ConsumerT):
                 # Sleeping because sometimes getmany is called in a loop
                 # never releasing to the event loop
                 await self.sleep(0)
-                await sleep(6)
+                await sleep(10)
                 if not self.should_stop:
                     async for tp, message in ait:
                         num_since_yield += 1
