@@ -1054,12 +1054,12 @@ class Consumer(Service, ConsumerT):
                 # Sleeping because sometimes getmany is called in a loop
                 # never releasing to the event loop
                 await self.sleep(0)
-                await sleep(3)
+                await sleep(6)
                 if not self.should_stop:
                     async for tp, message in ait:
                         num_since_yield += 1
                         if num_since_yield > yield_every:
-                            await sleep(10)
+                            await sleep(20)
                             num_since_yield = 0
 
                         offset = message.offset
@@ -1071,12 +1071,12 @@ class Consumer(Service, ConsumerT):
                                 acks_enabled = acks_enabled_for(message.topic)
                                 if acks_enabled:
                                     self._add_gap(tp, r_offset + 1, offset)
-                            if commit_every is not None:
-                                if self._n_acked >= commit_every:
-                                    self._n_acked = 0
-                                    self.log.info(f'this has hit commit.')
-                                    await self.commit()
-                                    self.log.info(f'commit has passed.')
+#                             if commit_every is not None:
+#                                 if self._n_acked >= commit_every:
+#                                     self._n_acked = 0
+#                                     self.log.info(f'this has hit commit.')
+#                                     await self.commit()
+#                                     self.log.info(f'commit has passed.')
                             await self._poll()
                             await callback(message)
                             set_read_offset(tp, offset)
