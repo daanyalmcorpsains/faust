@@ -1083,6 +1083,7 @@ class Consumer(Service, ConsumerT):
                         else:
                             self.log.info('DROPPED MESSAGE ROFF %r: k=%r v=%r',
                                          offset, message.key, message.value)
+                    await sleep(10)
                     unset_flag(flag_consumer_fetching)
 
 
