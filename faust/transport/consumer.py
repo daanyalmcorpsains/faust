@@ -1059,7 +1059,7 @@ class Consumer(Service, ConsumerT):
                     async for tp, message in ait:
                         num_since_yield += 1
                         if num_since_yield > yield_every:
-                            await sleep(5)
+                            await sleep(20)
                             num_since_yield = 0
 
                         offset = message.offset
@@ -1079,7 +1079,6 @@ class Consumer(Service, ConsumerT):
 #                                     self.log.info(f'commit has passed.')
                             await self._poll()
                             await callback(message)
-                            await sleep(0.5)
                             set_read_offset(tp, offset)
                         else:
                             self.log.info('DROPPED MESSAGE ROFF %r: k=%r v=%r',
