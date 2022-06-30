@@ -669,11 +669,11 @@ class Producer(base.Producer):
             on_delivery=fut.set_from_on_delivery,
         )
         return cast(Awaitable[RecordMetadata], fut)
-#         try:
-#             return cast(Awaitable[RecordMetadata], await self._producer.send(
-#                 topic, value, key=key, partition=partition))
-#         except KafkaException as exc:
-#             raise ProducerSendError(f'Error while sending: {exc!r}') from exc
+        try:
+            return cast(Awaitable[RecordMetadata], await self._producer.send(
+                topic, value, key=key, partition=partition))
+        except KafkaException as exc:
+            raise ProducerSendError(f'Error while sending: {exc!r}') from exc
 
     async def send_and_wait(self, topic: str, key: Optional[bytes],
                             value: Optional[bytes],
