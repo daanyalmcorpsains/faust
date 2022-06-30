@@ -1071,12 +1071,12 @@ class Consumer(Service, ConsumerT):
                                 acks_enabled = acks_enabled_for(message.topic)
                                 if acks_enabled:
                                     self._add_gap(tp, r_offset + 1, offset)
-#                             if commit_every is not None:
-#                                 if self._n_acked >= commit_every:
-#                                     self._n_acked = 0
-#                                     self.log.info(f'this has hit commit.')
-#                                     await self.commit()
-#                                     self.log.info(f'commit has passed.')
+                            if commit_every is not None:
+                                if self._n_acked >= commit_every:
+                                    self._n_acked = 0
+                                    self.log.info(f'this has hit commit.')
+                                    await self.commit()
+                                    self.log.info(f'commit has passed.')
                             await self._poll()
                             await callback(message)
                             set_read_offset(tp, offset)
