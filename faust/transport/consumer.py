@@ -1055,7 +1055,7 @@ class Consumer(Service, ConsumerT):
                 # Sleeping because sometimes getmany is called in a loop
                 # never releasing to the event loop
                 await self.sleep(0)
-                await sleep(30)
+                await sleep(120)
                 if not self.should_stop:
                     gen_count += 1
                     self.log.info(f'starting new async generator: number {gen_count} ')
@@ -1064,7 +1064,7 @@ class Consumer(Service, ConsumerT):
 #                         if num_since_yield > yield_every:
 #                             await sleep(0)
 #                             num_since_yield = 0
-
+                        self.log.info(f'do we need to iterate all before next generator is produced')
                         offset = message.offset
                         r_offset = get_read_offset(tp)
                         if r_offset is None or offset > r_offset:
