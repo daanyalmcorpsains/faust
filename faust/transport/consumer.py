@@ -1045,6 +1045,7 @@ class Consumer(Service, ConsumerT):
         num_since_yield = 0
         sleep = asyncio.sleep
         msg_err = ''
+        gen_count = 0
 
         try:
             while not (consumer_should_stop() or fetcher_should_stop()):
@@ -1056,6 +1057,8 @@ class Consumer(Service, ConsumerT):
                 await self.sleep(0)
                 await sleep(30)
                 if not self.should_stop:
+                    gen_count += 1
+                    self.log.info(f'starting new async generator: number {gen_count} ')
                     async for tp, message in ait:
 #                         num_since_yield += 1
 #                         if num_since_yield > yield_every:
@@ -1087,6 +1090,8 @@ class Consumer(Service, ConsumerT):
                             self.log.info('DROPPED MESSAGE ROFF %r: k=%r v=%r',
                                          offset, message.key, message.value)
                     await sleep(3)
+                    gen_count -= 1
+                    self.log.info(f'stopping completed async generator: new count {gen_count} ') 
                     unset_flag(flag_consumer_fetching)
 
 
