@@ -520,6 +520,8 @@ class ProducerThread(QueueServiceThread, BrokerCredentialsMixin):
         self.producer = producer
         self.transport = cast(Transport, self.producer.transport)
         self.app = self.transport.app
+        self.flush_every = 1000
+        self.flush_count = 0
         self.credentials = self.get_auth_credentials(client='confluent')
         super().__init__(**kwargs)
 
@@ -551,6 +553,13 @@ class ProducerThread(QueueServiceThread, BrokerCredentialsMixin):
                 on_delivery: Callable) -> None:
         if self._producer is None:
             raise RuntimeError('Producer not started')
+            
+        self.flush_count += 1
+        
+        if self.flush_count >= self.flush_every:
+            self._producer.flush()
+            self.flush_count = 0
+            
         if partition is not None:
             self._producer.produce(
                 topic, key, value, partition, on_delivery=on_delivery,
