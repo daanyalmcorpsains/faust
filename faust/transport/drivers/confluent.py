@@ -433,7 +433,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
                       timeout: float) -> RecordMap:
         # Implementation for the Fetcher service.
         await self.poll()
-        await asyncio.sleep(5)
+        await asyncio.sleep(0)
         _consumer = self._ensure_consumer()
         messages = await self.call_thread(
             _consumer.consume,
@@ -445,7 +445,8 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         self.log.info(f'the messages are of length {length}.')
         if messages:
             _consumer.commit(asynchronous=True)
-            await asyncio.sleep(5)            
+            await asyncio.sleep(0)
+            await asyncio.sleep(0)
             self.log.info(f'the first message of this batch is {messages[0].value()}. The last message of this batch is {messages[-1].value()}')
             records: RecordMap = defaultdict(list)
             for message in messages:
@@ -520,7 +521,7 @@ class ProducerThread(QueueServiceThread, BrokerCredentialsMixin):
         self.producer = producer
         self.transport = cast(Transport, self.producer.transport)
         self.app = self.transport.app
-        self.flush_every = 1000
+        self.flush_every = 3000
         self.flush_count = 0
         self.credentials = self.get_auth_credentials(client='confluent')
         super().__init__(**kwargs)
@@ -569,6 +570,7 @@ class ProducerThread(QueueServiceThread, BrokerCredentialsMixin):
                 self._producer.produce(
                     topic, key, value, on_delivery=on_delivery,
                 )
+                
             except Exception as e:
                 self.log.info(f'it looks like the queue buffer is full: {e}')
                 self._producer.flush()
