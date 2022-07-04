@@ -1050,7 +1050,12 @@ class Consumer(Service, ConsumerT):
         try:
             while not (consumer_should_stop() or fetcher_should_stop()):
                 set_flag(flag_consumer_fetching)
-                results, results_length = getmany(timeout=1.0)
+                results = getmany(timeout=1.0)
+                results_length = 0
+                
+                for tp in list(records.keys()):
+                    results_length += len(records[tp])
+                
                 ait = cast(AsyncIterator, results)
                 # Sleeping because sometimes getmany is called in a loop
                 # never releasing to the event loop
