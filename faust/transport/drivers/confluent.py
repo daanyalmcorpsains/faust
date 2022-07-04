@@ -456,7 +456,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
             for tp in list(records.keys()):
                 total_rec_length += len(records[tp])
             self.log.info(f'just confirming the dictionary is of length {total_rec_length}.')
-            return records
+            return records, total_rec_length
         else: 
             await self.poll()
             await asyncio.sleep(60)
