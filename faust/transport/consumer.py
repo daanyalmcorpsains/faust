@@ -1053,8 +1053,8 @@ class Consumer(Service, ConsumerT):
                 results = getmany(timeout=1.0)
                 results_length = 0
                 
-                for tp in list(records.keys()):
-                    results_length += len(records[tp])
+                for tp in list(results.keys()):
+                    results_length += len(results[tp])
                 
                 ait = cast(AsyncIterator, results)
                 # Sleeping because sometimes getmany is called in a loop
