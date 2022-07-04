@@ -437,7 +437,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         _consumer = self._ensure_consumer()
         messages = await self.call_thread(
             _consumer.consume,
-            num_messages=1000,
+            num_messages=300,
             timeout=timeout,
         )        
         
@@ -445,8 +445,6 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         self.log.info(f'the messages are of length {length}.')
         if messages:
             _consumer.commit(asynchronous=True)
-            await asyncio.sleep(0)
-            await asyncio.sleep(0)
             self.log.info(f'the first message of this batch is {messages[0].value()}. The last message of this batch is {messages[-1].value()}')
             records: RecordMap = defaultdict(list)
             for message in messages:
