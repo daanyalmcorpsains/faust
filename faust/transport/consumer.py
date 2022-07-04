@@ -1051,11 +1051,10 @@ class Consumer(Service, ConsumerT):
             while not (consumer_should_stop() or fetcher_should_stop()):
                 set_flag(flag_consumer_fetching)
                 ait = cast(AsyncIterator, getmany(timeout=1.0))
-                    
                 # Sleeping because sometimes getmany is called in a loop
                 # never releasing to the event loop
                 await self.sleep(0)
-                await sleep(120)
+                iter_count = 0
                 if not self.should_stop:
                     gen_count += 1
                     self.log.info(f'starting new async generator: number {gen_count} ')
@@ -1081,15 +1080,14 @@ class Consumer(Service, ConsumerT):
 #                                     await self.commit()
 #                                     self.log.info(f'commit has passed.')
                             await self._poll()
-                            await sleep(0)
                             await callback(message)
-                            await sleep(0)
                             set_read_offset(tp, offset)
-                            await sleep(0)
+                            iter_count += 1
                         else:
                             self.log.info('DROPPED MESSAGE ROFF %r: k=%r v=%r',
                                          offset, message.key, message.value)
-                    await sleep(3)
+                    while iter_count < 3000:
+                        await sleep(3)
                     gen_count -= 1
                     self.log.info(f'stopping completed async generator: new count {gen_count} ') 
                     unset_flag(flag_consumer_fetching)
