@@ -1087,6 +1087,7 @@ class Consumer(Service, ConsumerT):
                             self.log.info('DROPPED MESSAGE ROFF %r: k=%r v=%r',
                                          offset, message.key, message.value)
                     while iter_count < 3000:
+                        await self._poll()
                         await sleep(3)
                     gen_count -= 1
                     self.log.info(f'stopping completed async generator: new count {gen_count} ') 
