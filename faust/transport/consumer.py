@@ -1088,7 +1088,7 @@ class Consumer(Service, ConsumerT):
                         else:
                             self.log.info('DROPPED MESSAGE ROFF %r: k=%r v=%r',
                                          offset, message.key, message.value)
-                    while iter_count < results_length:
+                    while iter_count < self.record_length:
                         await self._poll()
                         await sleep(6)
                     gen_count -= 1
