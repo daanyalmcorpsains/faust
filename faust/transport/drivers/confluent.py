@@ -437,7 +437,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         _consumer = self._ensure_consumer()
         messages = await self.call_thread(
             _consumer.consume,
-            num_messages=3001,
+            num_messages=300,
             timeout=timeout,
         )        
         
