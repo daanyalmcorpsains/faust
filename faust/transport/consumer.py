@@ -442,6 +442,7 @@ class Consumer(Service, ConsumerT):
         self._time_start = monotonic()
         self._end_offset_monitor_interval = self.commit_interval * 2
         self.randomly_assigned_topics = set()
+        self.record_length = 0
         self.can_resume_flow = Event()
         self._reset_state()
         super().__init__(loop=loop or self.transport.loop, **kwargs)
@@ -693,10 +694,11 @@ class Consumer(Service, ConsumerT):
             # Fetch records only if active partitions to avoid the risk of
             # fetching all partitions in the beginning when none of the
             # partitions is paused/resumed.
-            records = await self._getmany(
+            records, length = await self._getmany(
                 active_partitions=active_partitions,
                 timeout=timeout,
             )
+            self.record_length = length
         else:
             # We should still release to the event loop
             await self.sleep(1)
@@ -1051,12 +1053,6 @@ class Consumer(Service, ConsumerT):
             while not (consumer_should_stop() or fetcher_should_stop()):
                 set_flag(flag_consumer_fetching)
                 results = getmany(timeout=1.0)
-                results_length = 0
-                self.log.info(f'results is {results}.')
-                for tp in list(results.keys()):
-                    results_length += len(results[tp])
-                
-                self.log.info(f'results are of length {results_length}')
                 ait = cast(AsyncIterator, results)
                 # Sleeping because sometimes getmany is called in a loop
                 # never releasing to the event loop
@@ -1092,7 +1088,7 @@ class Consumer(Service, ConsumerT):
                         else:
                             self.log.info('DROPPED MESSAGE ROFF %r: k=%r v=%r',
                                          offset, message.key, message.value)
-                    while iter_count < results_length:
+                    while iter_count < self.record_length:
                         await self._poll()
                         await sleep(6)
                     gen_count -= 1
