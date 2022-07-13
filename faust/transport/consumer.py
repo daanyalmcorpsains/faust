@@ -1056,6 +1056,7 @@ class Consumer(Service, ConsumerT):
                 for tp in list(results.keys()):
                     results_length += len(results[tp])
                 
+                self.log.info(f'results are of length {results_length}')
                 ait = cast(AsyncIterator, results)
                 # Sleeping because sometimes getmany is called in a loop
                 # never releasing to the event loop
