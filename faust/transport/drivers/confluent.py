@@ -453,7 +453,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
                 
             
             total_rec_length = 0
-            for tp in list(records.keys()):
+            for tp in records:
                 total_rec_length += len(records[tp])
             self.log.info(f'just confirming the dictionary is of length {total_rec_length}.')
   
