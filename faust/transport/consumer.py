@@ -1052,7 +1052,7 @@ class Consumer(Service, ConsumerT):
                 set_flag(flag_consumer_fetching)
                 results = getmany(timeout=1.0)
                 results_length = 0
-                
+                self.log.info(f'results is {results}.')
                 for tp in list(results.keys()):
                     results_length += len(results[tp])
                 
