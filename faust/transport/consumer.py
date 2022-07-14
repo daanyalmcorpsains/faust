@@ -1040,7 +1040,7 @@ class Consumer(Service, ConsumerT):
         flag_consumer_fetching = CONSUMER_FETCHING
         set_flag = self.diag.set_flag
         unset_flag = self.diag.unset_flag
-        commit_every = self._commit_every
+        commit_every = 100
         acks_enabled_for = self.app.topics.acks_enabled_for
 
         yield_every = 150
