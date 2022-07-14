@@ -334,7 +334,7 @@ class Recovery(Service):
         active_highwaters = self.active_highwaters
 
         while not self.should_stop:
-            self.log.dev('WAITING FOR NEXT RECOVERY TO START')
+            self.log.info('WAITING FOR NEXT RECOVERY TO START')
             self.signal_recovery_reset.clear()
             self._set_recovery_ended()
             if await self.wait_for_stopped(self.signal_recovery_start):
@@ -373,12 +373,12 @@ class Recovery(Service):
                 if producer is not None:
                     await self._wait(T(producer.flush)())
 
-                self.log.dev('Build highwaters for active partitions')
+                self.log.info('Build highwaters for active partitions')
                 await self._wait(T(self._build_highwaters)(
                     consumer, assigned_active_tps,
                     active_highwaters, 'active'))
 
-                self.log.dev('Build offsets for active partitions')
+                self.log.info('Build offsets for active partitions')
                 await self._wait(T(self._build_offsets)(
                     consumer, assigned_active_tps, active_offsets, 'active'))
 
@@ -392,12 +392,12 @@ class Recovery(Service):
                             ),
                         )
 
-                self.log.dev('Build offsets for standby partitions')
+                self.log.info('Build offsets for standby partitions')
                 await self._wait(T(self._build_offsets)(
                     consumer, assigned_standby_tps,
                     standby_offsets, 'standby'))
 
-                self.log.dev('Seek offsets for active partitions')
+                self.log.info('Seek offsets for active partitions')
                 await self._wait(T(self._seek_offsets)(
                     consumer, assigned_active_tps, active_offsets, 'active'))
 
