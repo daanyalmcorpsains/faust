@@ -370,7 +370,9 @@ class Recovery(Service):
                 # Must flush any buffers before starting rebalance.
                 T(self.flush_buffers)()
                 producer = cast(_App, self.app)._producer
+                self.log.info('does it get to 373')
                 if producer is not None:
+                    self.log.info('IS THE PRODUCER STUCK FLUSHING.')
                     await self._wait(T(producer.flush)())
 
                 self.log.info('Build highwaters for active partitions')
