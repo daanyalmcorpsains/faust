@@ -347,7 +347,7 @@ class ConfluentConsumerThread(ConsumerThread, BrokerCredentialsMixin):
         }
 
     async def commit(self, tps: Mapping[TP, int]) -> bool:
-        self.call_thread(
+        await self.call_thread(
             self._ensure_consumer().commit,
             offsets=[
                 _TopicPartition(tp.topic, tp.partition, offset=offset)
