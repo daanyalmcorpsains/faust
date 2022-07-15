@@ -330,6 +330,7 @@ class AIOKafkaConsumerThread(BrokerCredentialsMixin,ConsumerThread ):
             isolation_level = 'read_committed'
         self._assignor = self.app.assignor
         auth_settings = self.get_auth_credentials(client='aiokafka')
+        self.log.info(f'auth_settings are {auth_settings}')
         max_poll_interval = conf.broker_max_poll_interval or 0
 
         request_timeout = conf.broker_request_timeout
@@ -377,6 +378,7 @@ class AIOKafkaConsumerThread(BrokerCredentialsMixin,ConsumerThread ):
             loop: asyncio.AbstractEventLoop) -> aiokafka.AIOKafkaConsumer:
         conf = self.app.conf
         auth_settings = self.get_auth_credentials(client='aiokafka')
+        self.log.info(f'auth_settings are {auth_settings}')
         max_poll_interval = conf.broker_max_poll_interval or 0
         return aiokafka.AIOKafkaConsumer(
             loop=loop,
